@@ -1,0 +1,8 @@
+.reg {
+    padding: 10px;
+}
+
+.join {
+    display: flex;
+    gap: 10px;
+}
