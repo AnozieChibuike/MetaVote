@@ -9,6 +9,7 @@ import Web3 from "web3";
 import { Button, Label, Modal, Table, TextInput } from "flowbite-react";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
+import REACT_APP_SERVER_URL from "../constant.js";
 
 const web3 = new Web3(window.ethereum);
 const contract = new web3.eth.Contract(contractABI, contractAddress);

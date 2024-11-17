@@ -11,6 +11,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
+import REACT_APP_SERVER_URL from "../constant.js";
 // import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 
 const WhitelistPage = () => {

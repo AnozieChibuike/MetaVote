@@ -10,6 +10,7 @@ import Loader from "../components/loader.jsx";
 import { useNavigate } from "react-router-dom";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
+import REACT_APP_SERVER_URL from "../constant.js";
 
 const CreateElectionPage = () => {
   const navigate = useNavigate();
@@ -79,7 +80,7 @@ const CreateElectionPage = () => {
     }
     setLoading(true);
     try {
-      const response = await fetch(`${process.env.REACT_APP_SERVER_URL}/create-election`, {
+      const response = await fetch(`${REACT_APP_SERVER_URL}/create-election`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",

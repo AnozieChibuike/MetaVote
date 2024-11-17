@@ -9,6 +9,7 @@ import { Button, Table } from "flowbite-react";
 import Loader from "../components/loader.jsx";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import REACT_APP_SERVER_URL from "../constant.js";
 
 const VotePage = () => {
   const [selectedCandidateInfo, setSelected] = useState(null);
