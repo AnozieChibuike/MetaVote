@@ -5,6 +5,7 @@ const bodyParser = require("body-parser");
 const Web3 = require("web3");
 const cors = require("cors");
 const crypto = require("crypto");
+const Datastore = require("nedb");
 const multer = require("multer");
 const fs = require("fs");
 const path = require("path");
@@ -1044,71 +1045,27 @@ app.use(bodyParser.json());
 app.use(express.json());
 const upload = multer({ dest: "uploads/" });
 
-const votersFilePath = path.resolve("voters.json");
+// Initialize NeDB databases
+const votersDb = new Datastore({ filename: "voters.db", autoload: true });
+const whitelistDb = new Datastore({ filename: "whitelist.db", autoload: true });
 
-// Helper function to read registration numbers from the file
-const readVotersFile = () => {
-  if (!fs.existsSync(votersFilePath)) {
-    fs.writeFileSync(
-      votersFilePath,
-      JSON.stringify({ registrationNumbers: [] }, null, 2)
-    );
-  }
-  const data = fs.readFileSync(votersFilePath, "utf-8");
-  return JSON.parse(data).registrationNumbers;
-};
-
-// Helper function to write registration numbers to the file
-const writeVotersFile = (registrationNumbers) => {
-  fs.writeFileSync(
-    votersFilePath,
-    JSON.stringify({ registrationNumbers }, null, 2)
-  );
-};
-
-const whitelistFilePath = path.resolve("whitelisted.json");
-
-// Read from whitelisted.json
-const readWhitelistFile = () => {
-  if (!fs.existsSync(whitelistFilePath)) {
-    fs.writeFileSync(whitelistFilePath, JSON.stringify([], null, 2));
-  }
-  return JSON.parse(fs.readFileSync(whitelistFilePath, "utf-8"));
-};
-
-// Write to whitelisted.json
-const writeWhitelistFile = (whitelistedVoters) => {
-  fs.writeFileSync(
-    whitelistFilePath,
-    JSON.stringify(whitelistedVoters, null, 2)
-  );
-};
-
-// Endpoint to check if voters.json is empty or not
+// Check if voters database is empty
 app.get("/voters-file-status", (req, res) => {
-  try {
-    const registrationNumbers = readVotersFile();
-
-    if (registrationNumbers.length === 0) {
-      return res.json({
-        isEmpty: true,
-        message: "The voters.json file is empty."
-      });
+  votersDb.find({}, (err, docs) => {
+    if (err) {
+      console.error("Error reading voters database:", err);
+      return res.status(500).json({ error: "Could not check voters database status." });
     }
 
-    return res.json({
-      isEmpty: false,
-      message: "The voters.json file contains data."
+    const isEmpty = docs.length === 0;
+    res.json({
+      isEmpty,
+      message: isEmpty ? "The voters database is empty." : "The voters database contains data."
     });
-  } catch (error) {
-    console.error("Error checking voters.json:", error);
-    return res
-      .status(500)
-      .json({ error: "Could not check voters.json status." });
-  }
+  });
 });
 
-// Endpoint to upload a file containing registration numbers
+// Upload and add registration numbers
 app.post("/upload", upload.single("file"), (req, res) => {
   if (!req.file) {
     return res.status(400).json({ error: "No file uploaded" });
@@ -1116,189 +1073,124 @@ app.post("/upload", upload.single("file"), (req, res) => {
 
   const filePath = path.resolve(req.file.path);
 
-  // Read and parse the uploaded file
   fs.readFile(filePath, "utf-8", (err, data) => {
     if (err) {
       return res.status(500).json({ error: "Error reading the file" });
     }
 
-    const newRegNumbers = data
-      .split("\n")
-      .map((num) => num.trim())
-      .filter(Boolean);
-    const existingRegNumbers = readVotersFile();
+    const newRegNumbers = data.split("\n").map((num) => num.trim()).filter(Boolean);
 
-    // Combine new and existing registration numbers
-    const combinedRegNumbers = Array.from(
-      new Set([...existingRegNumbers, ...newRegNumbers])
-    );
-    writeVotersFile(combinedRegNumbers);
+    votersDb.find({}, (err, docs) => {
+      if (err) return res.status(500).json({ error: "Database error" });
 
-    // Delete the uploaded file
-    fs.unlinkSync(filePath);
+      const existingRegNumbers = docs.map((doc) => doc.registrationNumber);
+      const combinedRegNumbers = Array.from(new Set([...existingRegNumbers, ...newRegNumbers]));
 
-    res.json({
-      message: `${newRegNumbers.length} registration numbers added.`
+      const newEntries = combinedRegNumbers
+        .filter((num) => !existingRegNumbers.includes(num))
+        .map((num) => ({ registrationNumber: num }));
+
+      votersDb.insert(newEntries, (err) => {
+        if (err) return res.status(500).json({ error: "Error updating database" });
+
+        fs.unlinkSync(filePath); // Clean up uploaded file
+        res.json({ message: `${newEntries.length} registration numbers added.` });
+      });
     });
   });
 });
-// Vote endpoint
+
+// Whitelist voters
 app.post("/whitelist", async (req, res) => {
   const { electionId, registrationNumber, gas } = req.body;
-  try {
-    if (!registrationNumber) {
-      return res.status(400).json({ error: "Registration number is required" });
-    }
 
-    const registrationNumbers = readVotersFile();
+  if (!registrationNumber) {
+    return res.status(400).json({ error: "Registration number is required" });
+  }
 
-    if (!registrationNumbers.includes(registrationNumber)) {
+  votersDb.findOne({ registrationNumber }, async (err, voter) => {
+    if (err || !voter) {
       return res.status(404).json({ error: "Registration number not found" });
     }
 
-    // Step 2: Read the current whitelist file
-    const whitelistedVoters = readWhitelistFile();
+    whitelistDb.findOne({ registrationNumber }, async (err, existingVoter) => {
+      if (err) return res.status(500).json({ error: "Database error" });
 
-    // Step 3: Check if the voter is already whitelisted
-    const voter = whitelistedVoters.find(
-      (v) => v.registrationNumber === registrationNumber
-    );
+      if (existingVoter) {
+        return res.json({ message: "Voter already whitelisted", voter: existingVoter });
+      }
 
-    if (voter) {
-      return res.json({
-        message: "Voter already whitelisted",
-        voter
-      });
-    }
-    // Build the transaction
-    const gasPrice = await web3.eth.getGasPrice();
-    const account = web3.eth.accounts.privateKeyToAccount(
-      process.env.RELAYER_PRIVATE_KEY
-    );
-    const tx = {
-      to: contractAddress,
-      data: votingContract.methods
-        .whitelistUser(electionId, registrationNumber, gas)
-        .encodeABI(),
-      from: account.address,
-      gasPrice
-    };
+      try {
+        const gasPrice = await web3.eth.getGasPrice();
+        const account = web3.eth.accounts.privateKeyToAccount(process.env.RELAYER_PRIVATE_KEY);
+        const tx = {
+          to: contractAddress,
+          data: votingContract.methods.whitelistUser(electionId, registrationNumber, gas).encodeABI(),
+          from: account.address,
+          gasPrice
+        };
 
-    const signedTx = await web3.eth.accounts.signTransaction(
-      tx,
-      account.privateKey
-    );
-    const receipt = await web3.eth.sendSignedTransaction(
-      signedTx.rawTransaction
-    );
+        const signedTx = await web3.eth.accounts.signTransaction(tx, account.privateKey);
+        const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
 
-    const newVoter = {
-      registrationNumber,
-      pin: generatePin()
-    };
+        const newVoter = { registrationNumber, pin: generatePin() };
 
-    // Step 5: Update the whitelist file
-    whitelistedVoters.push(newVoter);
-    writeWhitelistFile(whitelistedVoters);
+        whitelistDb.insert(newVoter, (err) => {
+          if (err) return res.status(500).json({ error: "Error saving to whitelist database" });
 
-    res.json({ success: true, transactionHash: receipt.transactionHash, newVoter });
-  } catch (error) {
-    console.log(error);
-    if (
-      error.cause?.message ===
-      "execution reverted: You are not authorized to create elections"
-    ) {
-      res.status(500).json({
-        success: false,
-        error: "You are not authorized to create elections"
-      });
-      return;
-    }
-    res.status(500).json({ success: false, error: error.message });
-  }
+          res.json({ success: true, transactionHash: receipt.transactionHash, newVoter });
+        });
+      } catch (error) {
+        res.status(500).json({ success: false, error: error.message });
+      }
+    });
+  });
 });
 
-app.post('/verify-voter', async(req, res) => {
-  
-  const {registrationNumber, pin } = req.body;
-  const whitelistedVoters = readWhitelistFile();
-  const voter = whitelistedVoters.find(
-    (v) => v.registrationNumber === registrationNumber
-  );
+// Verify voter
+app.post("/verify-voter", (req, res) => {
+  const { registrationNumber, pin } = req.body;
 
-  if (!voter) {
-    console.log('cjdj')
-    return res.json({ error: "Registration number not found." });
-  }
+  whitelistDb.findOne({ registrationNumber }, (err, voter) => {
+    if (err || !voter) {
+      return res.status(404).json({ error: "Registration number not found." });
+    }
 
-  if (voter.pin !== pin) {
-    console.log('cjdj')
-    return res.json({ error: "Incorrect pin." });
-  }
+    if (voter.pin !== pin) {
+      return res.status(400).json({ error: "Incorrect PIN." });
+    }
 
-  res.json({ success: true});
-})
+    res.json({ success: true });
+  });
+});
 
+// Vote endpoint
 app.post("/vote", async (req, res) => {
   const { gas, electionId, candidatesList, registrationNumber } = req.body;
-  
-  console.log(candidatesList)
 
-  const whitelistedVoters = readWhitelistFile();
-  const voter = whitelistedVoters.find(
-    (v) => v.registrationNumber === registrationNumber
-  );
-
-  if (!voter) {
-    return res.status(404).json({ error: "Registration number not found." });
-  }
-  try {
-    // Build the transaction
-    const gasPrice = await web3.eth.getGasPrice();
-    const account = web3.eth.accounts.privateKeyToAccount(
-      process.env.RELAYER_PRIVATE_KEY
-    );
-    const tx = {
-      to: contractAddress,
-      data: votingContract.methods
-        .batchVote(registrationNumber, electionId, candidatesList, gas)
-        .encodeABI(),
-      // gas: 3000000,
-      from: account.address,
-      //   nonce: nonce,pppppp
-      gasPrice
-      // Set an appropriate gas limit
-    };
-
-    // console.log("TX ", tx);
-
-    // Sign the transaction with the relayer's private key
-
-    const signedTx = await web3.eth.accounts.signTransaction(
-      tx,
-      account.privateKey
-    );
-    const receipt = await web3.eth.sendSignedTransaction(
-      signedTx.rawTransaction
-    );
-
-    console.log(receipt);
-
-    res.json({ success: true, transactionHash: receipt.transactionHash });
-  } catch (error) {
-    console.log(error);
-    if (
-      error.cause.message ===
-      "execution reverted: You are not authorized to create elections"
-    ) {
-      res.status(500).json({
-        success: false,
-        error: "You are not authorized to create elections"
-      });
-      return;
+  whitelistDb.findOne({ registrationNumber }, async (err, voter) => {
+    if (err || !voter) {
+      return res.status(404).json({ error: "Registration number not found." });
     }
-    res.status(500).json({ success: false, error: error.cause.message });
-  }
+
+    try {
+      const gasPrice = await web3.eth.getGasPrice();
+      const account = web3.eth.accounts.privateKeyToAccount(process.env.RELAYER_PRIVATE_KEY);
+      const tx = {
+        to: contractAddress,
+        data: votingContract.methods.batchVote(registrationNumber, electionId, candidatesList, gas).encodeABI(),
+        from: account.address,
+        gasPrice
+      };
+
+      const signedTx = await web3.eth.accounts.signTransaction(tx, account.privateKey);
+      const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+
+      res.json({ success: true, transactionHash: receipt.transactionHash });
+    } catch (error) {
+      res.status(500).json({ success: false, error: error.message });
+    }
+  });
 });
 
 app.post("/create-election", async (req, res) => {

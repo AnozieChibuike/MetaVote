@@ -11,7 +11,7 @@ import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
 import REACT_APP_SERVER_URL from "../constant.js";
 
-const web3 = new Web3(window.ethereum);
+const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 function ManageElection() {
@@ -39,6 +39,11 @@ function ManageElection() {
     const admin = sessionStorage.getItem("code") || null;
     return admin;
   };
+
+  useEffect(() => {
+    setAlert("");
+    setRedAlert("");
+  }, []);
 
   // Extract the 'id' parameter
   const id = urlParams.get("id");
@@ -79,8 +84,6 @@ function ManageElection() {
     if (!getAdmin()) return;
     setLoading(true);
     try {
-      console.log(account);
-      console.log(id);
       const election = await contract.methods.elections(Number(id)).call();
       if (Number(election.votingStartTime) == 0) {
         setRedAlert("Invalid Election");
@@ -88,6 +91,7 @@ function ManageElection() {
         return;
       }
       setItems(election);
+      console.log(election)
     } catch (error) {
       setRedAlert(error.message);
       console.error("Error loading election:", error);
@@ -174,7 +178,6 @@ function ManageElection() {
       .getCandidates(Number(items.id))
       .call();
     setCandidates(candidatesz);
-    console.log(candidatesz[0][3]);
   };
 
   useEffect(() => {
@@ -218,7 +221,6 @@ function ManageElection() {
       const data = await response.json();
       setAlert("File uploaded successfully!");
       fetchFileStatus()
-      console.log(data);
     } catch (error) {
       console.error("Error uploading file:", error);
       setRedAlert(error.message);
@@ -241,27 +243,13 @@ function ManageElection() {
         <a href="/create-election" className="text-blue-700">
           Back
         </a>
+        <div className="flex justify-center items-center">
+          <img src={items?.logoUrl}  className="w-32"/>
+        </div>
         <h2 className="text-2xl text-center my-3 font-semibold">
           Manage Election
         </h2>
         <p>Name: {items?.name}</p>
-        {/* <div className="flex flex-col">
-          <p>
-            Balance: {balance} eth{" "}
-            {price && <span>~ {(price * balance).toFixed(2)} USD</span>}
-          </p>
-          <div className="flex gap-3 py-3">
-            <Button
-              className="bg-blue-600"
-              onClick={() => {
-                setOpenDepositModal(true);
-              }}
-            >
-              Top up
-            </Button>
-            <Button className="bg-blue-600">Withdraw</Button>
-          </div>
-        </div> */}
         <p className="mt-3">Total Voters: {Number(items ? items[3] : 0)}</p>
         <p className="mt-3">Election Link: </p>
         <a

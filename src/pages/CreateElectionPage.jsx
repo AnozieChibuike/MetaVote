@@ -31,7 +31,15 @@ const CreateElectionPage = () => {
 
   const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
   const contract = new web3.eth.Contract(contractABI, contractAddress);
-  const { loading, setLoading, account, alert, setAlert, redAlert, setRedAlert } = useContext(AppContext);
+  const {
+    loading,
+    setLoading,
+    account,
+    alert,
+    setAlert,
+    redAlert,
+    setRedAlert
+  } = useContext(AppContext);
 
   function logErrorDetails(error) {
     console.log("Error Details:");
@@ -50,13 +58,23 @@ const CreateElectionPage = () => {
       setDepElections(elections);
       console.log(elections);
     } catch (error) {
-      console.log(error)
+      console.log(error);
       logErrorDetails(error);
-      setRedAlert("Error: " + error.message + " Deployed Elections check your internet connection");
+      setRedAlert(
+        "Error: " +
+          error.message +
+          " Deployed Elections check your internet connection"
+      );
     } finally {
       setElectionLoading(false);
     }
   };
+
+  useEffect(() => {
+    setAlert("");
+    setRedAlert("");
+  }, []);
+  console.log(REACT_APP_SERVER_URL);
 
   useEffect(() => {
     const admin = getAdmin();
@@ -70,7 +88,7 @@ const CreateElectionPage = () => {
 
   const createElection = async () => {
     if (!electionName || !votingStart || !votingEnd) {
-      console.log(electionName, votingStart, votingEnd, electionLogoUrl)
+      console.log(electionName, votingStart, votingEnd, electionLogoUrl);
       setRedAlert("Missing some required parameters to create the election");
       return;
     }
@@ -83,17 +101,17 @@ const CreateElectionPage = () => {
       const response = await fetch(`${REACT_APP_SERVER_URL}/create-election`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json",
+          "Content-Type": "application/json"
         },
         body: JSON.stringify({
           electionName,
           electionLogoUrl,
           start: dateToTimestamp(votingStart),
-          end: dateToTimestamp(votingEnd),
-        }),
+          end: dateToTimestamp(votingEnd)
+        })
       });
       const body = await response.json();
-      if (body.success){
+      if (body.success) {
         setAlert(
           <span>
             Election created successfully, click this{" "}
@@ -107,12 +125,11 @@ const CreateElectionPage = () => {
             to view the transaction on the blockchain explorer
           </span>
         );
-        populateElections()
-      }
-      else setRedAlert(body.error)
+        populateElections();
+      } else setRedAlert(body.error);
       console.log(body);
     } catch (error) {
-      setRedAlert(String(error))
+      setRedAlert(String(error));
       console.log(error);
     } finally {
       setLoading(false);
