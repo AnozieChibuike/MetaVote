@@ -303,7 +303,7 @@ function ManageElection() {
           <p id="voting"></p>
         </div>
         <h2 className="text-2xl text-center my-3 font-semibold">Candidates</h2>
-        <div className="overflow-x-auto flex flex-col">
+        <div className="overflow-x-auto flex flex-col mb-2">
           {candidates.length == 0 && (
             <p className="text-center mb-5 italic">No Candidates yet</p>
           )}
