@@ -334,10 +334,10 @@ const VotePage = () => {
             Meta<span className="text-red-400">Vote</span>
           </h1>
         </div>
-        <div>
+        {/* <div>
           <p id="voting"></p>
         </div>
-        {!votable && <p className="italic text-red-600 text-sm">Voting is closed</p>}
+        {!votable && <p className="italic text-red-600 text-sm">Voting is closed</p>} */}
         <div className="flex justify-center items-center">
           <img src={election?.logoUrl} className="w-32" />
         </div>
