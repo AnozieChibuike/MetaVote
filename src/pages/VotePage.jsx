@@ -38,7 +38,7 @@ const VotePage = () => {
   // Use effect to update button state when conditions change
   useEffect(() => {
     // If both conditions are true, enable the button
-    if (voterVerified && selectedCandidates.length > 0 && !hasVoted && votable) {
+    if (voterVerified && selectedCandidates.length > 0 && !hasVoted) {
       setIsButtonDisabled(false);
     } else {
       setIsButtonDisabled(true); // Keep button disabled until both conditions are true
