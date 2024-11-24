@@ -1231,8 +1231,9 @@ app.post('/verify-voter', async(req, res) => {
     return res.json({ error: "Registration number not found." });
   }
 
-  if (voter.pin !== pin) {
-    console.log('cjdj')
+  if (String(voter.pin) != String(pin)) {
+    console.log(voter.pin)
+    console.log(pin)
     return res.json({ error: "Incorrect pin." });
   }
 
