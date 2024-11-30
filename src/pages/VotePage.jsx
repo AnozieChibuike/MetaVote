@@ -38,7 +38,7 @@ const VotePage = () => {
   // Use effect to update button state when conditions change
   useEffect(() => {
     // If both conditions are true, enable the button
-    if (voterVerified && selectedCandidates.length > 0 && !hasVoted && votable) {
+    if (voterVerified && selectedCandidates.length > 0 && !hasVoted) {
       setIsButtonDisabled(false);
     } else {
       setIsButtonDisabled(true); // Keep button disabled until both conditions are true
@@ -334,10 +334,10 @@ const VotePage = () => {
             Meta<span className="text-red-400">Vote</span>
           </h1>
         </div>
-        <div>
+        {/* <div>
           <p id="voting"></p>
         </div>
-        {!votable && <p className="italic text-red-600 text-sm">Voting is closed</p>}
+        {!votable && <p className="italic text-red-600 text-sm">Voting is closed</p>} */}
         <div className="flex justify-center items-center">
           <img src={election?.logoUrl} className="w-32" />
         </div>

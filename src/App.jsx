@@ -10,12 +10,21 @@ import ResultsPage from "./pages/ResultsPage";
 import AppProvider from "./context/AppContext";
 import WalletButton from "./components/WalletButton";
 import ManageElection from "./pages/ManageElection";
+import {
+  FaGithub,
+  FaInstagram,
+  FaLinkedin,
+  FaMailchimp,
+  FaTwitter,
+  FaWhatsapp,
+} from "react-icons/fa";
+import { FaXTwitter } from "react-icons/fa6";
+import { CiMail } from "react-icons/ci";
 // import { Magic } from '@magic-sdk/react';
 
 const App = () => {
+  window.document.title = "Meta Vote";
   return (
-  
-
     <AppProvider>
       <Router>
         <Routes>
@@ -27,6 +36,74 @@ const App = () => {
           <Route path="/results" element={<ResultsPage />} />
         </Routes>
       </Router>
+      <footer className="bg-gray-800 text-gray-300 py-8">
+        <div className="max-w-7xl mx-auto px-4">
+          <h1 className="text-xl font-bold text-blue-600 text-center">
+            Meta<span className="text-red-400">Vote</span>
+          </h1>
+          {/* Copyright Section */}
+          <div className="text-center mb-4">
+            <p className="text-sm text-gray-400">
+              Copyright © {new Date().getFullYear()} MetaVote. All rights
+              reserved.
+            </p>
+          </div>
+
+          {/* Name Section */}
+          <div className="text-center mb-6">
+            <h3 className="text-lg font-semibold">Anozie Joel</h3>
+            <p className="text-sm text-gray-400">
+              Building solutions one step at a time.
+            </p>
+          </div>
+
+          {/* Social Links */}
+          <div className="flex justify-center space-x-6">
+            <a
+              href="https://x.com/JoelBlvck2"
+              className="text-gray-400 hover:text-white"
+              aria-label="Twitter"
+            >
+              <FaXTwitter size={22} />
+            </a>
+            <a
+              href="https://www.instagram.com/joel_is_batman"
+              className="text-gray-400 hover:text-white"
+              aria-label="Instagram"
+            >
+              <FaInstagram size={22} />
+            </a>
+            <a
+              href="https://api.whatsapp.com/send/?phone=%2B2347040361805&text&type=phone_number&app_absent=0"
+              className="text-gray-400 hover:text-white"
+              aria-label="WhatsApp"
+            >
+              <FaWhatsapp size={22} />
+            </a>
+            <a
+              href="https://github.com/AnozieChibuike"
+              className="text-gray-400 hover:text-white"
+              aria-label="GitHub"
+            >
+              <FaGithub size={22} />
+            </a>
+            <a
+              href="https://www.linkedin.com/in/anoziejoel/"
+              className="text-gray-400 hover:text-white"
+              aria-label="Linkedin"
+            >
+              <FaLinkedin size={22} />
+            </a>
+            <a
+              href="mailto:chibuikenozie0@gmail.com"
+              className="text-gray-400 hover:text-white"
+              aria-label="Mail"
+            >
+              <CiMail size={22} />
+            </a>
+          </div>
+        </div>
+      </footer>
     </AppProvider>
   );
 };

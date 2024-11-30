@@ -66,7 +66,7 @@ module.exports = {
     }),
   ],
   devServer: {
-    static: "./dist",
+    static: "./public",
     historyApiFallback: true, // This enables reloading for routes
     port: 3000,
     hot: true,
