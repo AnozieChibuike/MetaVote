@@ -20,6 +20,7 @@ import {
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { CiMail } from "react-icons/ci";
+import { Analytics } from "@vercel/analytics/react"
 // import { Magic } from '@magic-sdk/react';
 
 const App = () => {
@@ -36,6 +37,7 @@ const App = () => {
           <Route path="/results" element={<ResultsPage />} />
         </Routes>
       </Router>
+      <Analytics />
       <footer className="bg-gray-800 text-gray-300 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-xl font-bold text-blue-600 text-center">
