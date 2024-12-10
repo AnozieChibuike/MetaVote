@@ -9,7 +9,7 @@ import { contractAddress, contractABI } from "../contract.js";
 
 const Home = () => {
   const { account, loading, setLoading } = useContext(AppContext);
-  const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
+  const web3 = new Web3("https://rpc.api.lisk.com");
   const contract = new web3.eth.Contract(contractABI, contractAddress);
 
   const whiteList = async () => {

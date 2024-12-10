@@ -92,7 +92,7 @@ const VotePage = () => {
   };
 
   // const contractAddress = "0x1e78ff9407dd881f9ab17320Afc15A49d626ae00";
-  const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
+  const web3 = new Web3("https://rpc.api.lisk.com");
   const contract = new web3.eth.Contract(contractABI, contractAddress, {
     handleRevert: true
   });

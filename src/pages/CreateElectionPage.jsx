@@ -29,7 +29,7 @@ const CreateElectionPage = () => {
     return admin;
   };
 
-  const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
+  const web3 = new Web3("https://rpc.api.lisk.com");
   const contract = new web3.eth.Contract(contractABI, contractAddress);
   const {
     loading,

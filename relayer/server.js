@@ -14,6 +14,139 @@ const web3 = new Web3.Web3(process.env.INFURA_URL);
 const contractAddress = process.env.CONTRACT_ADDRESS;
 const contractABI = [
   {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_electionId",
+        type: "uint256"
+      },
+      {
+        internalType: "string",
+        name: "_name",
+        type: "string"
+      },
+      {
+        internalType: "string",
+        name: "_imageURL",
+        type: "string"
+      },
+      {
+        internalType: "string",
+        name: "_position",
+        type: "string"
+      }
+    ],
+    name: "addCandidate",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_creator",
+        type: "address"
+      }
+    ],
+    name: "addElectionCreator",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_voter",
+        type: "string"
+      },
+      {
+        internalType: "uint256",
+        name: "_electionId",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256[]",
+        name: "_candidateIds",
+        type: "uint256[]"
+      },
+      {
+        internalType: "uint256",
+        name: "_estimatedGas",
+        type: "uint256"
+      }
+    ],
+    name: "batchVote",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_electionId",
+        type: "uint256"
+      },
+      {
+        internalType: "string[]",
+        name: "_registrationNumbers",
+        type: "string[]"
+      },
+      {
+        internalType: "uint256",
+        name: "_estimatedGasPerUser",
+        type: "uint256"
+      }
+    ],
+    name: "batchWhitelistUsers",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_name",
+        type: "string"
+      },
+      {
+        internalType: "uint256",
+        name: "_votingStartTime",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_votingEndTime",
+        type: "uint256"
+      },
+      {
+        internalType: "string",
+        name: "_logoUrl",
+        type: "string"
+      }
+    ],
+    name: "createElection",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_electionID",
+        type: "uint256"
+      }
+    ],
+    name: "deposit",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function"
+  },
+  {
     inputs: [],
     stateMutability: "nonpayable",
     type: "constructor"
@@ -203,6 +336,67 @@ const contractABI = [
     type: "event"
   },
   {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_creator",
+        type: "address"
+      }
+    ],
+    name: "removeElectionCreator",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address"
+      }
+    ],
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_voter",
+        type: "string"
+      },
+      {
+        internalType: "uint256",
+        name: "_electionId",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_candidateId",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_estimatedGas",
+        type: "uint256"
+      }
+    ],
+    name: "vote",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -247,6 +441,29 @@ const contractABI = [
     type: "event"
   },
   {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_electionId",
+        type: "uint256"
+      },
+      {
+        internalType: "string",
+        name: "_registrationNumber",
+        type: "string"
+      },
+      {
+        internalType: "uint256",
+        name: "_estimatedGas",
+        type: "uint256"
+      }
+    ],
+    name: "whitelistUser",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
     anonymous: false,
     inputs: [
       {
@@ -279,63 +496,12 @@ const contractABI = [
         type: "uint256"
       },
       {
-        internalType: "string",
-        name: "_name",
-        type: "string"
-      },
-      {
-        internalType: "string",
-        name: "_imageURL",
-        type: "string"
-      },
-      {
-        internalType: "string",
-        name: "_position",
-        type: "string"
-      }
-    ],
-    name: "addCandidate",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_creator",
-        type: "address"
-      }
-    ],
-    name: "addElectionCreator",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "_voter",
-        type: "string"
-      },
-      {
         internalType: "uint256",
-        name: "_electionId",
-        type: "uint256"
-      },
-      {
-        internalType: "uint256[]",
-        name: "_candidateIds",
-        type: "uint256[]"
-      },
-      {
-        internalType: "uint256",
-        name: "_estimatedGas",
+        name: "_amount",
         type: "uint256"
       }
     ],
-    name: "batchVote",
+    name: "withdrawBalance",
     outputs: [],
     stateMutability: "nonpayable",
     type: "function"
@@ -382,47 +548,6 @@ const contractABI = [
       }
     ],
     stateMutability: "view",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "_name",
-        type: "string"
-      },
-      {
-        internalType: "uint256",
-        name: "_votingStartTime",
-        type: "uint256"
-      },
-      {
-        internalType: "uint256",
-        name: "_votingEndTime",
-        type: "uint256"
-      },
-      {
-        internalType: "string",
-        name: "_logoUrl",
-        type: "string"
-      }
-    ],
-    name: "createElection",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_electionID",
-        type: "uint256"
-      }
-    ],
-    name: "deposit",
-    outputs: [],
-    stateMutability: "payable",
     type: "function"
   },
   {
@@ -920,26 +1045,6 @@ const contractABI = [
     type: "function"
   },
   {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_creator",
-        type: "address"
-      }
-    ],
-    name: "removeElectionCreator",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [],
-    name: "renounceOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
     inputs: [],
     name: "serviceFeePercentage",
     outputs: [
@@ -951,90 +1056,8 @@ const contractABI = [
     ],
     stateMutability: "view",
     type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "newOwner",
-        type: "address"
-      }
-    ],
-    name: "transferOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "_voter",
-        type: "string"
-      },
-      {
-        internalType: "uint256",
-        name: "_electionId",
-        type: "uint256"
-      },
-      {
-        internalType: "uint256",
-        name: "_candidateId",
-        type: "uint256"
-      },
-      {
-        internalType: "uint256",
-        name: "_estimatedGas",
-        type: "uint256"
-      }
-    ],
-    name: "vote",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_electionId",
-        type: "uint256"
-      },
-      {
-        internalType: "string",
-        name: "_registrationNumber",
-        type: "string"
-      },
-      {
-        internalType: "uint256",
-        name: "_estimatedGas",
-        type: "uint256"
-      }
-    ],
-    name: "whitelistUser",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_electionId",
-        type: "uint256"
-      },
-      {
-        internalType: "uint256",
-        name: "_amount",
-        type: "uint256"
-      }
-    ],
-    name: "withdrawBalance",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function"
   }
-]; // Replace with your contract's ABI
+] // Replace with your contract's ABI
 const votingContract = new web3.eth.Contract(contractABI, contractAddress);
 
 // Initialize Express

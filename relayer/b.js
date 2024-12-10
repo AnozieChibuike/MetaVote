@@ -3,7 +3,7 @@ const fs = require("fs");
 const crypto = require("crypto");
 
 // Web3 and contract setup
-const web3 = new Web3.Web3("https://rpc.sepolia-api.lisk.com");
+const web3 = new Web3.Web3("https://rpc.api.lisk.com");
 
 const contractAddress = "0x71b73a4c3673a115921fCB6fd492B6de2F2992ac";
 
@@ -12,31 +12,164 @@ const privateKey =
   "9c5d4a0ac0d93df074926764d53e45ff6b0fdd07db3e1d8e8fe77a43362ee11b";
 const abi = [
   {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_electionId",
+        type: "uint256"
+      },
+      {
+        internalType: "string",
+        name: "_name",
+        type: "string"
+      },
+      {
+        internalType: "string",
+        name: "_imageURL",
+        type: "string"
+      },
+      {
+        internalType: "string",
+        name: "_position",
+        type: "string"
+      }
+    ],
+    name: "addCandidate",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "_creator",
+        type: "address"
+      }
+    ],
+    name: "addElectionCreator",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_voter",
+        type: "string"
+      },
+      {
+        internalType: "uint256",
+        name: "_electionId",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256[]",
+        name: "_candidateIds",
+        type: "uint256[]"
+      },
+      {
+        internalType: "uint256",
+        name: "_estimatedGas",
+        type: "uint256"
+      }
+    ],
+    name: "batchVote",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_electionId",
+        type: "uint256"
+      },
+      {
+        internalType: "string[]",
+        name: "_registrationNumbers",
+        type: "string[]"
+      },
+      {
+        internalType: "uint256",
+        name: "_estimatedGasPerUser",
+        type: "uint256"
+      }
+    ],
+    name: "batchWhitelistUsers",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "string",
+        name: "_name",
+        type: "string"
+      },
+      {
+        internalType: "uint256",
+        name: "_votingStartTime",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_votingEndTime",
+        type: "uint256"
+      },
+      {
+        internalType: "string",
+        name: "_logoUrl",
+        type: "string"
+      }
+    ],
+    name: "createElection",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_electionID",
+        type: "uint256"
+      }
+    ],
+    name: "deposit",
+    outputs: [],
+    stateMutability: "payable",
+    type: "function"
+  },
+  {
     inputs: [],
     stateMutability: "nonpayable",
-    type: "constructor",
+    type: "constructor"
   },
   {
     inputs: [
       {
         internalType: "address",
         name: "owner",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
     name: "OwnableInvalidOwner",
-    type: "error",
+    type: "error"
   },
   {
     inputs: [
       {
         internalType: "address",
         name: "account",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
     name: "OwnableUnauthorizedAccount",
-    type: "error",
+    type: "error"
   },
   {
     anonymous: false,
@@ -45,29 +178,29 @@ const abi = [
         indexed: false,
         internalType: "uint256",
         name: "electionId",
-        type: "uint256",
+        type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
         name: "candidateId",
-        type: "uint256",
+        type: "uint256"
       },
       {
         indexed: false,
         internalType: "string",
         name: "name",
-        type: "string",
+        type: "string"
       },
       {
         indexed: false,
         internalType: "string",
         name: "imageURL",
-        type: "string",
-      },
+        type: "string"
+      }
     ],
     name: "CandidateAdded",
-    type: "event",
+    type: "event"
   },
   {
     anonymous: false,
@@ -76,23 +209,23 @@ const abi = [
         indexed: false,
         internalType: "uint256",
         name: "electionId",
-        type: "uint256",
+        type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
         name: "amount",
-        type: "uint256",
+        type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
         name: "serviceFee",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     name: "DepositMade",
-    type: "event",
+    type: "event"
   },
   {
     anonymous: false,
@@ -101,59 +234,59 @@ const abi = [
         indexed: false,
         internalType: "uint256",
         name: "id",
-        type: "uint256",
+        type: "uint256"
       },
       {
         indexed: false,
         internalType: "string",
         name: "name",
-        type: "string",
+        type: "string"
       },
       {
         indexed: false,
         internalType: "uint256",
         name: "candidateCount",
-        type: "uint256",
+        type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
         name: "voterCount",
-        type: "uint256",
+        type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
         name: "votingStartTime",
-        type: "uint256",
+        type: "uint256"
       },
       {
         indexed: false,
         internalType: "uint256",
         name: "votingEndTime",
-        type: "uint256",
+        type: "uint256"
       },
       {
         indexed: false,
         internalType: "bool",
         name: "active",
-        type: "bool",
+        type: "bool"
       },
       {
         indexed: false,
         internalType: "uint256",
         name: "balance",
-        type: "uint256",
+        type: "uint256"
       },
       {
         indexed: false,
         internalType: "address",
         name: "creator",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
     name: "ElectionCreated",
-    type: "event",
+    type: "event"
   },
   {
     anonymous: false,
@@ -162,11 +295,11 @@ const abi = [
         indexed: false,
         internalType: "address",
         name: "creator",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
     name: "ElectionCreatorAdded",
-    type: "event",
+    type: "event"
   },
   {
     anonymous: false,
@@ -175,11 +308,11 @@ const abi = [
         indexed: false,
         internalType: "address",
         name: "creator",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
     name: "ElectionCreatorRemoved",
-    type: "event",
+    type: "event"
   },
   {
     anonymous: false,
@@ -188,264 +321,256 @@ const abi = [
         indexed: true,
         internalType: "address",
         name: "previousOwner",
-        type: "address",
+        type: "address"
       },
       {
         indexed: true,
         internalType: "address",
         name: "newOwner",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
     name: "OwnershipTransferred",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "electionId",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "voter",
-        type: "address",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "candidateId",
-        type: "uint256",
-      },
-    ],
-    name: "VoteCasted",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "electionId",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "voter",
-        type: "address",
-      },
-    ],
-    name: "Whitelisted",
-    type: "event",
-  },
-  {
-    anonymous: false,
-    inputs: [
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "electionId",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "uint256",
-        name: "amount",
-        type: "uint256",
-      },
-      {
-        indexed: false,
-        internalType: "address",
-        name: "creator",
-        type: "address",
-      },
-    ],
-    name: "Withdrawal",
-    type: "event",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_electionId",
-        type: "uint256",
-      },
-      {
-        internalType: "string",
-        name: "_name",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "_imageURL",
-        type: "string",
-      },
-      {
-        internalType: "string",
-        name: "_position",
-        type: "string",
-      },
-    ],
-    name: "addCandidate",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    type: "event"
   },
   {
     inputs: [
       {
         internalType: "address",
         name: "_creator",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
-    name: "addElectionCreator",
+    name: "removeElectionCreator",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
+    type: "function"
+  },
+  {
+    inputs: [],
+    name: "renounceOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    inputs: [
+      {
+        internalType: "address",
+        name: "newOwner",
+        type: "address"
+      }
+    ],
+    name: "transferOwnership",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "string",
         name: "_voter",
-        type: "string",
+        type: "string"
       },
       {
         internalType: "uint256",
         name: "_electionId",
-        type: "uint256",
+        type: "uint256"
       },
       {
-        internalType: "uint256[]",
-        name: "_candidateIds",
-        type: "uint256[]",
+        internalType: "uint256",
+        name: "_candidateId",
+        type: "uint256"
       },
       {
         internalType: "uint256",
         name: "_estimatedGas",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
-    name: "batchVote",
+    name: "vote",
     outputs: [],
     stateMutability: "nonpayable",
-    type: "function",
+    type: "function"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "electionId",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "voter",
+        type: "address"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "candidateId",
+        type: "uint256"
+      }
+    ],
+    name: "VoteCasted",
+    type: "event"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "electionId",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "voter",
+        type: "address"
+      }
+    ],
+    name: "Whitelisted",
+    type: "event"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_electionId",
+        type: "uint256"
+      },
+      {
+        internalType: "string",
+        name: "_registrationNumber",
+        type: "string"
+      },
+      {
+        internalType: "uint256",
+        name: "_estimatedGas",
+        type: "uint256"
+      }
+    ],
+    name: "whitelistUser",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
+  },
+  {
+    anonymous: false,
+    inputs: [
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "electionId",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "uint256",
+        name: "amount",
+        type: "uint256"
+      },
+      {
+        indexed: false,
+        internalType: "address",
+        name: "creator",
+        type: "address"
+      }
+    ],
+    name: "Withdrawal",
+    type: "event"
+  },
+  {
+    inputs: [
+      {
+        internalType: "uint256",
+        name: "_electionId",
+        type: "uint256"
+      },
+      {
+        internalType: "uint256",
+        name: "_amount",
+        type: "uint256"
+      }
+    ],
+    name: "withdrawBalance",
+    outputs: [],
+    stateMutability: "nonpayable",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     name: "candidates",
     outputs: [
       {
         internalType: "uint256",
         name: "id",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "string",
         name: "name",
-        type: "string",
+        type: "string"
       },
       {
         internalType: "uint256",
         name: "voteCount",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "string",
         name: "imageURL",
-        type: "string",
+        type: "string"
       },
       {
         internalType: "string",
         name: "position",
-        type: "string",
-      },
+        type: "string"
+      }
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "_name",
-        type: "string",
-      },
-      {
-        internalType: "uint256",
-        name: "_votingStartTime",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_votingEndTime",
-        type: "uint256",
-      },
-      {
-        internalType: "string",
-        name: "_logoUrl",
-        type: "string",
-      },
-    ],
-    name: "createElection",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_electionID",
-        type: "uint256",
-      },
-    ],
-    name: "deposit",
-    outputs: [],
-    stateMutability: "payable",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "string",
         name: "",
-        type: "string",
-      },
+        type: "string"
+      }
     ],
     name: "deviceToWallet",
     outputs: [
       {
         internalType: "address",
         name: "",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [],
@@ -454,107 +579,107 @@ const abi = [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     name: "electionIds",
     outputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     name: "elections",
     outputs: [
       {
         internalType: "uint256",
         name: "id",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "string",
         name: "name",
-        type: "string",
+        type: "string"
       },
       {
         internalType: "uint256",
         name: "candidateCount",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "uint256",
         name: "voterCount",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "uint256",
         name: "votingStartTime",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "uint256",
         name: "votingEndTime",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "bool",
         name: "active",
-        type: "bool",
+        type: "bool"
       },
       {
         internalType: "uint256",
         name: "balance",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "address",
         name: "creator",
-        type: "address",
+        type: "address"
       },
       {
         internalType: "string",
         name: "logoUrl",
-        type: "string",
-      },
+        type: "string"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "_electionId",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "uint256",
         name: "_candidateId",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     name: "getCandidate",
     outputs: [
@@ -563,44 +688,44 @@ const abi = [
           {
             internalType: "uint256",
             name: "id",
-            type: "uint256",
+            type: "uint256"
           },
           {
             internalType: "string",
             name: "name",
-            type: "string",
+            type: "string"
           },
           {
             internalType: "uint256",
             name: "voteCount",
-            type: "uint256",
+            type: "uint256"
           },
           {
             internalType: "string",
             name: "imageURL",
-            type: "string",
+            type: "string"
           },
           {
             internalType: "string",
             name: "position",
-            type: "string",
-          },
+            type: "string"
+          }
         ],
         internalType: "struct VotingSystem.Candidate",
         name: "",
-        type: "tuple",
-      },
+        type: "tuple"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "_electionId",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     name: "getCandidates",
     outputs: [
@@ -609,108 +734,108 @@ const abi = [
           {
             internalType: "uint256",
             name: "id",
-            type: "uint256",
+            type: "uint256"
           },
           {
             internalType: "string",
             name: "name",
-            type: "string",
+            type: "string"
           },
           {
             internalType: "uint256",
             name: "voteCount",
-            type: "uint256",
+            type: "uint256"
           },
           {
             internalType: "string",
             name: "imageURL",
-            type: "string",
+            type: "string"
           },
           {
             internalType: "string",
             name: "position",
-            type: "string",
-          },
+            type: "string"
+          }
         ],
         internalType: "struct VotingSystem.Candidate[]",
         name: "",
-        type: "tuple[]",
-      },
+        type: "tuple[]"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "_electionId",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     name: "getElectionById",
     outputs: [
       {
         internalType: "uint256",
         name: "id",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "string",
         name: "name",
-        type: "string",
+        type: "string"
       },
       {
         internalType: "uint256",
         name: "candidateCount",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "uint256",
         name: "voterCount",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "uint256",
         name: "votingStartTime",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "uint256",
         name: "votingEndTime",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "bool",
         name: "active",
-        type: "bool",
+        type: "bool"
       },
       {
         internalType: "uint256",
         name: "balance",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "address",
         name: "creator",
-        type: "address",
+        type: "address"
       },
       {
         internalType: "string",
         name: "logoUrl",
-        type: "string",
-      },
+        type: "string"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "address",
         name: "_creator",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
     name: "getElectionsByCreator",
     outputs: [
@@ -719,166 +844,166 @@ const abi = [
           {
             internalType: "uint256",
             name: "id",
-            type: "uint256",
+            type: "uint256"
           },
           {
             internalType: "string",
             name: "name",
-            type: "string",
+            type: "string"
           },
           {
             internalType: "uint256",
             name: "candidateCount",
-            type: "uint256",
+            type: "uint256"
           },
           {
             internalType: "uint256",
             name: "voterCount",
-            type: "uint256",
+            type: "uint256"
           },
           {
             internalType: "uint256",
             name: "votingStartTime",
-            type: "uint256",
+            type: "uint256"
           },
           {
             internalType: "uint256",
             name: "votingEndTime",
-            type: "uint256",
+            type: "uint256"
           },
           {
             internalType: "bool",
             name: "active",
-            type: "bool",
+            type: "bool"
           },
           {
             internalType: "uint256",
             name: "balance",
-            type: "uint256",
+            type: "uint256"
           },
           {
             internalType: "address",
             name: "creator",
-            type: "address",
+            type: "address"
           },
           {
             internalType: "string",
             name: "logoUrl",
-            type: "string",
-          },
+            type: "string"
+          }
         ],
         internalType: "struct VotingSystem.Election[]",
         name: "",
-        type: "tuple[]",
-      },
+        type: "tuple[]"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "_electionId",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     name: "getGasReserve",
     outputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "_electionId",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     name: "getTotalRegisteredVoters",
     outputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "string",
         name: "",
-        type: "string",
-      },
+        type: "string"
+      }
     ],
     name: "hasVoted",
     outputs: [
       {
         internalType: "bool",
         name: "",
-        type: "bool",
-      },
+        type: "bool"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "address",
         name: "",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
     name: "isElectionCreator",
     outputs: [
       {
         internalType: "bool",
         name: "",
-        type: "bool",
-      },
+        type: "bool"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "string",
         name: "",
-        type: "string",
-      },
+        type: "string"
+      }
     ],
     name: "isWhitelisted",
     outputs: [
       {
         internalType: "bool",
         name: "",
-        type: "bool",
-      },
+        type: "bool"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [],
@@ -887,55 +1012,35 @@ const abi = [
       {
         internalType: "address",
         name: "",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
     stateMutability: "view",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
+        type: "uint256"
       },
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     name: "registrationToWallet",
     outputs: [
       {
         internalType: "address",
         name: "",
-        type: "address",
-      },
+        type: "address"
+      }
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "_creator",
-        type: "address",
-      },
-    ],
-    name: "removeElectionCreator",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [],
-    name: "renounceOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
+    type: "function"
   },
   {
     inputs: [],
@@ -944,105 +1049,21 @@ const abi = [
       {
         internalType: "uint256",
         name: "",
-        type: "uint256",
-      },
+        type: "uint256"
+      }
     ],
     stateMutability: "view",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "address",
-        name: "newOwner",
-        type: "address",
-      },
-    ],
-    name: "transferOwnership",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "string",
-        name: "_voter",
-        type: "string",
-      },
-      {
-        internalType: "uint256",
-        name: "_electionId",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_candidateId",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_estimatedGas",
-        type: "uint256",
-      },
-    ],
-    name: "vote",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_electionId",
-        type: "uint256",
-      },
-      {
-        internalType: "string",
-        name: "_registrationNumber",
-        type: "string",
-      },
-      {
-        internalType: "uint256",
-        name: "_estimatedGas",
-        type: "uint256",
-      },
-    ],
-    name: "whitelistUser",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-  {
-    inputs: [
-      {
-        internalType: "uint256",
-        name: "_electionId",
-        type: "uint256",
-      },
-      {
-        internalType: "uint256",
-        name: "_amount",
-        type: "uint256",
-      },
-    ],
-    name: "withdrawBalance",
-    outputs: [],
-    stateMutability: "nonpayable",
-    type: "function",
-  },
-];
+    type: "function"
+  }
+]
 const contract = new web3.eth.Contract(abi, contractAddress);
 
-// Function to generate a 6-digit random PIN
 function generatePin() {
   return crypto.randomInt(100000, 1000000); // Generates a number between 100000 and 999999
 }
 
-// Bulk Whitelist Function
-async function bulkWhitelist(electionId, gasLimit) {
-  // Read the txt file and split it into an array of regNum
+async function bulkWhitelist(electionId, gasPerUser) {
+  // Read the txt file and split it into an array of registration numbers
   const fileData = fs.readFileSync("t.txt", "utf-8");
   const regNums = fileData
     .split("\n")
@@ -1050,62 +1071,71 @@ async function bulkWhitelist(electionId, gasLimit) {
     .filter((line) => line);
 
   // Initialize or load existing whitelisted.json
-  let whitelistedData = [];
   const jsonFilePath = "whitelisted.json";
+  let whitelistedData = [];
   if (fs.existsSync(jsonFilePath)) {
     whitelistedData = JSON.parse(fs.readFileSync(jsonFilePath, "utf-8"));
   }
 
-  for (let i = 0; i < regNums.length; i++) {
-    const regNum = regNums[i];
-    try {
-      // Prepare the transaction
-      const txData = contract.methods.whitelistUser(electionId, regNum,30000).encodeABI();
-      const gasPrice = await web3.eth.getGasPrice();
-      const tx = {
-        to: contractAddress,
-        gas: gasLimit,
-        data: txData,
-        from: account,
-        gasPrice
-      };
-
-      // Estimate gas to ensure it fits
-      const estimatedGas = await web3.eth.estimateGas({ ...tx, from: account });
-      tx.gas = estimatedGas;
-
-      // Sign the transaction
-      const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
-
-      // Send the transaction
-      const receipt = await web3.eth.sendSignedTransaction(
-        signedTx.rawTransaction
-      );
-      console.log(
-        `✅ Successfully whitelisted ${regNum}:`,
-        receipt.transactionHash
-      );
-      // Generate PIN and append to whitelisted data
-      
-    } catch (error) {
-      console.error(`❌ Error whitelisting ${regNum}:`, error?.cause?.message);
-      console.error(`❌ Error whitelisting ${regNum}:`, error.message);
-    } finally {
-        const pin = generatePin();
-      whitelistedData.push({ registrationNumber: regNum, pin });
-
-      
-
-      // Save to JSON after each successful operation
-      fs.writeFileSync(jsonFilePath, JSON.stringify(whitelistedData, null, 2));
-    }
-  }
-  console.log(
-    "📋 Bulk whitelist process completed. Check whitelisted.json for results."
+  // Extract already whitelisted registration numbers to avoid duplicates
+  const alreadyWhitelisted = new Set(
+    whitelistedData.map((entry) => entry.registrationNumber)
   );
+
+  // Filter out registration numbers that are already whitelisted
+  const newRegNums = regNums.filter((regNum) => !alreadyWhitelisted.has(regNum));
+
+  if (newRegNums.length === 0) {
+    console.log("🚫 No new registration numbers to whitelist.");
+    return;
+  }
+
+  try {
+    // Calculate gas and prepare the transaction
+    const gasPrice = await web3.eth.getGasPrice();
+    const txData = contract.methods
+      .batchWhitelistUsers(electionId, newRegNums, gasPerUser)
+      .encodeABI();
+
+    const tx = {
+      to: contractAddress,
+      data: txData,
+      from: account,
+      gasPrice,
+    };
+
+    // Estimate gas for the batch
+    const estimatedGas = await web3.eth.estimateGas({ ...tx, from: account });
+    tx.gas = estimatedGas;
+
+    // Sign the transaction
+    const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+
+    // Send the transaction
+    const receipt = await web3.eth.sendSignedTransaction(
+      signedTx.rawTransaction
+    );
+
+    console.log(
+      `✅ Successfully whitelisted batch of ${newRegNums.length} voters.`,
+      `Transaction Hash: ${receipt.transactionHash}`
+    );
+
+    // Generate PINs and update whitelisted.json
+    const newEntries = newRegNums.map((regNum) => ({
+      registrationNumber: regNum,
+      pin: generatePin(),
+    }));
+    whitelistedData.push(...newEntries);
+
+    fs.writeFileSync(jsonFilePath, JSON.stringify(whitelistedData, null, 2));
+    console.log("📋 Whitelist updated in whitelisted.json.");
+  } catch (error) {
+    console.error("❌ Error in batch whitelisting:", error?.message || error);
+  }
 }
 
 // Example Call
 const electionId = 2; // Replace with your electionId
-const gasLimit = 300000; // Adjust gas limit as needed
-bulkWhitelist(electionId, gasLimit);
+const gasPerUser = 30000; // Estimated gas per user
+bulkWhitelist(electionId, gasPerUser);

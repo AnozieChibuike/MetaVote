@@ -230,6 +230,36 @@ contract VotingSystem is Ownable {
         elections[_electionId].balance -= _estimatedGas;
     }
 
+    function batchWhitelistUsers(
+    uint256 _electionId,
+    string[] memory _registrationNumbers,
+    uint256 _estimatedGasPerUser
+) external onlyOwner {
+    uint256 totalGasNeeded = _registrationNumbers.length * _estimatedGasPerUser;
+    
+    require(
+        elections[_electionId].balance >= totalGasNeeded,
+        "Insufficient gas in reserve to whitelist wallets, tell the election creator"
+    );
+
+    for (uint256 i = 0; i < _registrationNumbers.length; i++) {
+        string memory registrationNumber = _registrationNumbers[i];
+        
+        require(
+            !isWhitelisted[_electionId][registrationNumber],
+            string(abi.encodePacked("User ", registrationNumber, " is already whitelisted"))
+        );
+
+        // Link registration number and whitelist the user
+        isWhitelisted[_electionId][registrationNumber] = true;
+    }
+
+    // Update election state
+    elections[_electionId].voterCount += _registrationNumbers.length;
+    elections[_electionId].balance -= totalGasNeeded;
+}
+
+
     // Voting function for a specific election
     function vote(
         string memory _voter,
