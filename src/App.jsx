@@ -104,6 +104,11 @@ const App = () => {
               <CiMail size={22} />
             </a>
           </div>
+
+          {/* MISC */}
+          <div className="flex justify-end mt-5 -mb-3">
+          <p className="text-[9px]">MAINNET | <span>v1</span></p>
+          </div>
         </div>
       </footer>
     </AppProvider>
