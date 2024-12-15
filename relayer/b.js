@@ -1144,7 +1144,7 @@ async function bulkWhitelisto(electionId, gasPerUser, inputFile, outputFile) {
 
 async function bulkWhitelist(electionId, gasLimit) {
   // Read the txt file and split it into an array of regNum
-  const fileData = fs.readFileSync("500.txt", "utf-8");
+  const fileData = fs.readFileSync("400.txt", "utf-8");
   const regNums = fileData
     .split("\n")
     .map((line) => line.trim())
@@ -1153,8 +1153,8 @@ async function bulkWhitelist(electionId, gasLimit) {
   // Initialize or load existing whitelisted.json
   let whitelistedData = [];
   let errorData = [];
-  const jsonFilePath = "500.json";
-  const errorFilePath = "500error.json";
+  const jsonFilePath = "400.json";
+  const errorFilePath = "400error.json";
   if (fs.existsSync(jsonFilePath)) {
     whitelistedData = JSON.parse(fs.readFileSync(jsonFilePath, "utf-8"));
   }

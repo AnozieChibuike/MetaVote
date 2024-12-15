@@ -1,130 +1,19 @@
 [
   {
-    "reg": "20191154031",
-    "reason": "execution reverted: User is already whitelisted"
+    "reg": "20191158981",
+    "reason": "nonce too low: next nonce 197, tx nonce 196"
+  },
+
+  {
+    "reg": "20191153801",
+    "reason": "nonce too low: next nonce 198, tx nonce 197"
   },
   {
-    "reg": "20191171701",
-    "reason": "execution reverted: User is already whitelisted"
+    "reg": "20191177181",
+    "reason": "nonce too low: next nonce 201, tx nonce 200"
   },
   {
-    "reg": "20191193431",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191150951",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191186751",
-    "reason": "nonce too low: next nonce 165, tx nonce 164"
-  },
-  {
-    "reg": "20191165281",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191188741",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191179001",
-    "reason": "nonce too low: next nonce 166, tx nonce 165"
-  },
-  {
-    "reg": "20191176321",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191173801",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191183521",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191184751",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191181991",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20181144215",
-    "reason": "nonce too low: next nonce 168, tx nonce 167"
-  },
-  {
-    "reg": "20191156881",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191171381",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191158701",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191166021",
-    "reason": "nonce too low: next nonce 169, tx nonce 168"
-  },
-  {
-    "reg": "20191154651",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191189331",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191168661",
-    "reason": "nonce too low: next nonce 170, tx nonce 169"
-  },
-  {
-    "reg": "20191174561",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191174851",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191156231",
-    "reason": "nonce too low: next nonce 171, tx nonce 170"
-  },
-  {
-    "reg": "20191189291",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191169011",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191180701",
-    "reason": "nonce too low: next nonce 172, tx nonce 171"
-  },
-  {
-    "reg": "20191160891",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191162381",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191173151",
-    "reason": "nonce too low: next nonce 173, tx nonce 172"
-  },
-  {
-    "reg": "20191146591",
-    "reason": "execution reverted: User is already whitelisted"
-  },
-  {
-    "reg": "20191147981",
-    "reason": "execution reverted: User is already whitelisted"
+    "reg": "20191176831",
+    "reason": "nonce too low: next nonce 203, tx nonce 202"
   }
 ]

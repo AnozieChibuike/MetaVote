@@ -43,17 +43,17 @@ function filterDuplicatesByKey(inputFile, outputFile, uniqueKey) {
 }
 
 // Usage
-let inputFile = '100.json'; // Your input JSON file
-let outputFile = '100-filtered.json'; // Your output JSON file
+let inputFile = 'whitelisted.json'; // Your input JSON file
+let outputFile = 'white.json'; // Your output JSON file
 let uniqueKey = 'registrationNumber'; // Key to filter duplicates
 filterDuplicatesByKey(inputFile, outputFile, uniqueKey);
 
-inputFile = '400.json'; // Your input JSON file
-outputFile = '400-filtered.json'; // Your output JSON file
-uniqueKey = 'registrationNumber'; // Key to filter duplicates
-filterDuplicatesByKey(inputFile, outputFile, uniqueKey);
+// inputFile = '400.json'; // Your input JSON file
+// outputFile = '400-filtered.json'; // Your output JSON file
+// uniqueKey = 'registrationNumber'; // Key to filter duplicates
+// filterDuplicatesByKey(inputFile, outputFile, uniqueKey);
 
-inputFile = '500.json'; // Your input JSON file
-outputFile = '500-filtered.json'; // Your output JSON file
-uniqueKey = 'registrationNumber'; // Key to filter duplicates
-filterDuplicatesByKey(inputFile, outputFile, uniqueKey);
+// inputFile = '500.json'; // Your input JSON file
+// outputFile = '500-filtered.json'; // Your output JSON file
+// uniqueKey = 'registrationNumber'; // Key to filter duplicates
+// filterDuplicatesByKey(inputFile, outputFile, uniqueKey);
