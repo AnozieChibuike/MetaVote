@@ -11,7 +11,7 @@ import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
 import REACT_APP_SERVER_URL from "../constant.js";
 
-const web3 = new Web3("https://rpc.api.lisk.com");
+const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 function ManageElection() {
@@ -436,7 +436,7 @@ const CandidateModal = ({
             Candidate created successfully, click this{" "}
             <a
               target="_blank"
-              href={`https://sepolia-blockscout.lisk.com/tx/${body.transactionHash}`}
+              href={`https://rpc.sepolia-api.lisk.com/tx/${body.transactionHash}`}
               class="font-semibold underline hover:no-underline"
             >
               link

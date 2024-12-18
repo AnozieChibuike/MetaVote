@@ -1,28 +1,22 @@
 // src/App.js
 import React from "react";
 import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
-import Navbar from "./components/Navbar";
 import Home from "./pages/Home";
 import CreateElectionPage from "./pages/CreateElectionPage";
 import WhitelistPage from "./pages/WhitelistPage";
 import VotePage from "./pages/VotePage";
 import ResultsPage from "./pages/ResultsPage";
 import AppProvider from "./context/AppContext";
-import WalletButton from "./components/WalletButton";
 import ManageElection from "./pages/ManageElection";
 import {
   FaGithub,
   FaInstagram,
   FaLinkedin,
-  FaMailchimp,
-  FaTwitter,
   FaWhatsapp,
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { CiMail } from "react-icons/ci";
 import { Analytics } from "@vercel/analytics/react"
-// import { Magic } from '@magic-sdk/react';
-
 const App = () => {
   window.document.title = "Meta Vote";
   return (
@@ -107,7 +101,7 @@ const App = () => {
 
           {/* MISC */}
           <div className="flex justify-end mt-5 -mb-3">
-          <p className="text-[9px]">MAINNET | <span>v1</span></p>
+          <p className="text-[9px]">MAINNET | <span>v1.0.0</span></p>
           </div>
         </div>
       </footer>

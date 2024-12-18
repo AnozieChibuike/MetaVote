@@ -1325,6 +1325,10 @@ app.post("/vote", async (req, res) => {
   }
 });
 
+app.get("/", async (req, res) => {
+  res.json({success: "example"})
+})
+
 app.post("/create-election", async (req, res) => {
   const { electionName, electionLogoUrl, start, end } = req.body;
   console.log(req.body);

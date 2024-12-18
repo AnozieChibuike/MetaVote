@@ -131,7 +131,7 @@ const WhitelistPage = () => {
             whitelisted, click this{" "}
             <a
               target="_blank"
-              href={`https://sepolia-blockscout.lisk.com/tx/${result.transactionHash}`}
+              href={`https://rpc.sepolia-api.lisk.com/tx/${result.transactionHash}`}
               class="font-semibold underline hover:no-underline"
             >
               link
@@ -181,6 +181,9 @@ const WhitelistPage = () => {
             Meta<span className="text-red-400">Vote</span>
           </h1>
         </div>
+        <a href={"/manage?id=" + id} className="text-blue-700">
+          Back
+        </a>
         <div>
           <p id="voting"></p>
         </div>

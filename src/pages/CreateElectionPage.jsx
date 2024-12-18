@@ -29,7 +29,7 @@ const CreateElectionPage = () => {
     return admin;
   };
 
-  const web3 = new Web3("https://rpc.api.lisk.com");
+  const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
   const contract = new web3.eth.Contract(contractABI, contractAddress);
   const {
     loading,
@@ -117,7 +117,7 @@ const CreateElectionPage = () => {
             Election created successfully, click this{" "}
             <a
               target="_blank"
-              href={`https://sepolia-blockscout.lisk.com/tx/${body.transactionHash}`}
+              href={`https://rpc.sepolia-api.lisk.com/tx/${body.transactionHash}`}
               class="font-semibold underline hover:no-underline"
             >
               link

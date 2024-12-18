@@ -20,7 +20,7 @@ const CreateElectionPage = () => {
   const [votingEnd, setVotingEnd] = useState("");
   const [electionLoading, setElectionLoading] = useState(false);
 
-  const web3 = new Web3("https://rpc.api.lisk.com");
+  const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
   const contract = new web3.eth.Contract(contractABI, contractAddress);
 
   // contract.events.ElectionCreated().on("data", (event) => {

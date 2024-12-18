@@ -8,7 +8,7 @@ import { contractAddress, contractABI } from "../contract.js";
 import Web3 from "web3";
 import { Button, Label, Modal, Table, TextInput } from "flowbite-react";
 
-const web3 = new Web3("https://rpc.api.lisk.com");
+const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 function ManageElection() {
