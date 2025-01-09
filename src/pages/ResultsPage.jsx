@@ -11,7 +11,7 @@ import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
 import REACT_APP_SERVER_URL from "../constant.js";
 
-const web3 = new Web3("https://rpc.sepolia-api.lisk.comut.lisk.com");
+const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 function ResultsPage() {
