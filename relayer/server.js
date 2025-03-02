@@ -1246,7 +1246,7 @@ app.post('/verify-voter', async(req, res) => {
   const {registrationNumber, pin } = req.body;
   const whitelistedVoters = readWhitelistFile();
   const voter = whitelistedVoters.find(
-    (v) => v.registrationNumber === registrationNumber
+    (v) => String(v.registrationNumber) === String(registrationNumber)
   );
 
   if (!voter) {

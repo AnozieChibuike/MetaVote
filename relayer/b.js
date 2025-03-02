@@ -1,5 +1,5 @@
 const Web3 = require("web3");
-const fs = require("fs");
+// const fs = require("fs");
 const crypto = require("crypto");
 require("dotenv").config();
 
@@ -1063,111 +1063,183 @@ function generatePin() {
   return crypto.randomInt(100000, 1000000); // Generates a number between 100000 and 999999
 }
 
-async function bulkWhitelisto(electionId, gasPerUser, inputFile, outputFile) {
-  // Read the txt file and split it into an array of registration numbers
-  const fileData = fs.readFileSync(inputFile, "utf-8");
-  const regNums = fileData
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line);
+// async function bulkWhitelisto(electionId, gasPerUser, inputFile, outputFile) {
+//   // Read the txt file and split it into an array of registration numbers
+//   const fileData = fs.readFileSync(inputFile, "utf-8");
+//   const regNums = fileData
+//     .split("\n")
+//     .map((line) => line.trim())
+//     .filter((line) => line);
 
-  // Initialize or load existing whitelisted.json
-  const jsonFilePath = outputFile;
-  let whitelistedData = [];
-  if (fs.existsSync(jsonFilePath)) {
-    whitelistedData = JSON.parse(fs.readFileSync(jsonFilePath, "utf-8"));
-  }
+//   // Initialize or load existing whitelisted.json
+//   const jsonFilePath = outputFile;
+//   let whitelistedData = [];
+//   if (fs.existsSync(jsonFilePath)) {
+//     whitelistedData = JSON.parse(fs.readFileSync(jsonFilePath, "utf-8"));
+//   }
 
-  // Extract already whitelisted registration numbers to avoid duplicates
-  const alreadyWhitelisted = new Set(
-    whitelistedData.map((entry) => entry.registrationNumber)
-  );
+//   // Extract already whitelisted registration numbers to avoid duplicates
+//   const alreadyWhitelisted = new Set(
+//     whitelistedData.map((entry) => entry.registrationNumber)
+//   );
 
-  // Filter out registration numbers that are already whitelisted
-  const newRegNums = regNums.filter(
-    (regNum) => !alreadyWhitelisted.has(regNum)
-  );
+//   // Filter out registration numbers that are already whitelisted
+//   const newRegNums = regNums.filter(
+//     (regNum) => !alreadyWhitelisted.has(regNum)
+//   );
 
-  if (newRegNums.length === 0) {
-    console.log("🚫 No new registration numbers to whitelist.");
-    return;
-  }
+//   if (newRegNums.length === 0) {
+//     console.log("🚫 No new registration numbers to whitelist.");
+//     return;
+//   }
 
-  try {
-    // Calculate gas and prepare the transaction
-    const gasPrice = await web3.eth.getGasPrice();
+//   try {
+//     // Calculate gas and prepare the transaction
+//     const gasPrice = await web3.eth.getGasPrice();
     
-    const txData = contract.methods
-      .batchWhitelistUsers(electionId, newRegNums, gasPerUser)
-      .encodeABI();
+//     const txData = contract.methods
+//       .batchWhitelistUsers(electionId, newRegNums, gasPerUser)
+//       .encodeABI();
 
-    const tx = {
-      to: contractAddress,
-      data: txData,
-      from: account,
-      gasPrice
-    };
+//     const tx = {
+//       to: contractAddress,
+//       data: txData,
+//       from: account,
+//       gasPrice
+//     };
 
-    // Estimate gas for the batch
-    const estimatedGas = await web3.eth.estimateGas({ ...tx, from: account });
-    tx.gas = estimatedGas;
-    console.log(gasPrice, gasPerUser, estimatedGas)
+//     // Estimate gas for the batch
+//     const estimatedGas = await web3.eth.estimateGas({ ...tx, from: account });
+//     tx.gas = estimatedGas;
+//     console.log(gasPrice, gasPerUser, estimatedGas)
 
-    // Sign the transaction
-    const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+//     // Sign the transaction
+//     const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
 
-    // Send the transaction
-    const receipt = await web3.eth.sendSignedTransaction(
-      signedTx.rawTransaction
-    );
+//     // Send the transaction
+//     const receipt = await web3.eth.sendSignedTransaction(
+//       signedTx.rawTransaction
+//     );
 
-    console.log(
-      `✅ Successfully whitelisted batch of ${newRegNums.length} voters.`,
-      `Transaction Hash: ${receipt.transactionHash}`
-    );
+//     console.log(
+//       `✅ Successfully whitelisted batch of ${newRegNums.length} voters.`,
+//       `Transaction Hash: ${receipt.transactionHash}`
+//     );
 
-    // Generate PINs and update whitelisted.json
-    const newEntries = newRegNums.map((regNum) => ({
-      registrationNumber: regNum,
-      pin: generatePin()
-    }));
-    whitelistedData.push(...newEntries);
+//     // Generate PINs and update whitelisted.json
+//     const newEntries = newRegNums.map((regNum) => ({
+//       registrationNumber: regNum,
+//       pin: generatePin()
+//     }));
+//     whitelistedData.push(...newEntries);
 
-    fs.writeFileSync(jsonFilePath, JSON.stringify(whitelistedData, null, 2));
-    console.log("📋 Whitelist updated in whitelisted.json.");
-  } catch (error) {
-    console.log(error)
-    console.error("❌ Error in batch whitelisting:", error?.message || error);
-  }
-}
+//     fs.writeFileSync(jsonFilePath, JSON.stringify(whitelistedData, null, 2));
+//     console.log("📋 Whitelist updated in whitelisted.json.");
+//   } catch (error) {
+//     console.log(error)
+//     console.error("❌ Error in batch whitelisting:", error?.message || error);
+//   }
+// }
 
+const fs = require("fs");
+
+// async function bulkWhitelist(electionId, gasLimit) {
+//   // Read the txt file and split it into an array of regNum
+//   const fileData = fs.readFileSync("missing_regNos.txt", "utf-8");
+//   const regNums = fileData
+//     .split("\n")
+//     .map((line) => line.trim())
+//     .filter((line) => line);
+
+//   // Initialize or load existing whitelisted.json
+//   let whitelistedData = [];
+//   let errorData = [];
+//   const jsonFilePath = "300.json";
+//   const errorFilePath = "300error.json";
+//   if (fs.existsSync(jsonFilePath)) {
+//     whitelistedData = JSON.parse(fs.readFileSync(jsonFilePath, "utf-8"));
+//   }
+//   if (fs.existsSync(errorFilePath)) {
+//     errorData = JSON.parse(fs.readFileSync(errorFilePath, "utf-8"));
+//   }
+//   let nonce = await web3.eth.getTransactionCount(account, 'pending');
+
+//   for (let i = 0; i < regNums.length; i++) {
+//     const regNum = regNums[i];
+//     try {
+//       // Prepare the transaction
+//       const txData = contract.methods.whitelistUser(electionId, regNum,30000).encodeABI();
+//       const gasPrice = await web3.eth.getGasPrice();
+//       const tx = {
+//         to: contractAddress,
+//         gas: gasLimit,
+//         data: txData,
+//         from: account,
+//         gasPrice,
+
+//       };
+
+//       // Estimate gas to ensure it fits
+//       const estimatedGas = await web3.eth.estimateGas({ ...tx, from: account });
+//       tx.gas = estimatedGas;
+
+//       // Sign the transaction
+//       const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+
+//       // Send the transaction
+//       const receipt = await web3.eth.sendSignedTransaction(
+//         signedTx.rawTransaction
+//       );
+//       console.log(
+//         `✅ Successfully whitelisted ${regNum}:`,
+//         receipt.transactionHash
+//       );
+     
+//     } catch (error) {
+//       console.error(`❌ Error whitelisting ${regNum}:`, error?.cause?.message);
+//       console.error(`❌ Error whitelisting ${regNum}:`, error.message);
+//       errorData.push({reg: regNum, reason: error?.cause?.message || error.message});
+//       // Save to JSON after each successful operation
+//       fs.writeFileSync(errorFilePath, JSON.stringify(errorData, null, 2));
+//     } finally {
+//        // Generate PIN and append to whitelisted data
+//        const pin = generatePin();
+//        whitelistedData.push({ registrationNumber: regNum, pin });
+//        // Save to JSON after each successful operation
+//        fs.writeFileSync(jsonFilePath, JSON.stringify(whitelistedData, null, 2));
+//     }
+//   }
+//   console.log(
+//     "📋 Bulk whitelist process completed. Check whitelisted.json for results."
+//   );
+// }
+
+
+const csv = require("csv-parser");
+const { parse } = require("json2csv");
 
 async function bulkWhitelist(electionId, gasLimit) {
-  // Read the txt file and split it into an array of regNum
-  const fileData = fs.readFileSync("400.txt", "utf-8");
-  const regNums = fileData
-    .split("\n")
-    .map((line) => line.trim())
-    .filter((line) => line);
-
-  // Initialize or load existing whitelisted.json
+  const inputCsvFile = "100.csv";
+  const jsonOutputFile = "100.json";
+  const csvOutputFile ="100_output.csv";
+  const errorFilePath ="100error.json";
   let whitelistedData = [];
   let errorData = [];
-  const jsonFilePath = "400.json";
-  const errorFilePath = "400error.json";
-  if (fs.existsSync(jsonFilePath)) {
-    whitelistedData = JSON.parse(fs.readFileSync(jsonFilePath, "utf-8"));
+  let entries = [];
+  
+  if (fs.existsSync(jsonOutputFile)) {
+    whitelistedData = JSON.parse(fs.readFileSync(jsonOutputFile, "utf-8"));
   }
   if (fs.existsSync(errorFilePath)) {
     errorData = JSON.parse(fs.readFileSync(errorFilePath, "utf-8"));
   }
-  let nonce = await web3.eth.getTransactionCount(account, 'pending');
 
-  for (let i = 0; i < regNums.length; i++) {
-    const regNum = regNums[i];
+  const readStream = fs.createReadStream(inputCsvFile).pipe(csv());
+  for await (const row of readStream) {
+    const name = row.name.trim();
+    const regNum = row.regNo.trim();
     try {
-      // Prepare the transaction
-      const txData = contract.methods.whitelistUser(electionId, regNum,30000).encodeABI();
+      const txData = contract.methods.whitelistUser(electionId, regNum, 30000).encodeABI();
       const gasPrice = await web3.eth.getGasPrice();
       const tx = {
         to: contractAddress,
@@ -1175,46 +1247,37 @@ async function bulkWhitelist(electionId, gasLimit) {
         data: txData,
         from: account,
         gasPrice,
-
       };
 
-      // Estimate gas to ensure it fits
       const estimatedGas = await web3.eth.estimateGas({ ...tx, from: account });
       tx.gas = estimatedGas;
 
-      // Sign the transaction
       const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
-
-      // Send the transaction
-      const receipt = await web3.eth.sendSignedTransaction(
-        signedTx.rawTransaction
-      );
-      console.log(
-        `✅ Successfully whitelisted ${regNum}:`,
-        receipt.transactionHash
-      );
-     
+      const receipt = await web3.eth.sendSignedTransaction(signedTx.rawTransaction);
+      console.log(`✅ Successfully whitelisted ${regNum}:`, receipt.transactionHash);
     } catch (error) {
-      console.error(`❌ Error whitelisting ${regNum}:`, error?.cause?.message);
-      console.error(`❌ Error whitelisting ${regNum}:`, error.message);
-      errorData.push({reg: regNum, reason: error?.cause?.message || error.message});
-      // Save to JSON after each successful operation
+      console.error(`❌ Error whitelisting ${regNum}:`, error);
+      errorData.push({ regNo: regNum, reason: error?.cause?.message || error.message });
       fs.writeFileSync(errorFilePath, JSON.stringify(errorData, null, 2));
-    } finally {
-       // Generate PIN and append to whitelisted data
-       const pin = generatePin();
-       whitelistedData.push({ registrationNumber: regNum, pin });
-       // Save to JSON after each successful operation
-       fs.writeFileSync(jsonFilePath, JSON.stringify(whitelistedData, null, 2));
+      continue;
     }
+    
+    const pin = generatePin();
+    const regNo = regNum
+    whitelistedData.push({ regNo: regNum, pin });
+    entries.push({ name, regNo, pin });
+    fs.writeFileSync(jsonOutputFile, JSON.stringify(whitelistedData, null, 2));
   }
-  console.log(
-    "📋 Bulk whitelist process completed. Check whitelisted.json for results."
-  );
+
+  const csvData = parse(entries, { fields: ["name", "regNo", "pin"] });
+  fs.writeFileSync(csvOutputFile, csvData);
+  console.log("📋 Bulk whitelist process completed. Check outputs for results.");
 }
 
-// Example Call
-const electionId = 1; // Replace with your electionId
+
+
+// // Example Call
+const electionId = 4; // Replace with your electionId
 const gasLimit = 300000; // Adjust gas limit as needed
 bulkWhitelist(electionId, gasLimit);
 

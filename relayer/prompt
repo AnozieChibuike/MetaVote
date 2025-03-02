@@ -1,0 +1,1 @@
+I have a csv : name,regNo, then a json, [{pin: 1223, regNo: 12929}], I want to check the reg numbers in the csv anyone not in the json, it should create a new text file and store it there
