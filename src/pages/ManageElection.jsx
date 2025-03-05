@@ -174,10 +174,19 @@ function ManageElection() {
   };
 
   const fetchCandidates = async () => {
-    const candidatesz = await contract.methods
-      .getCandidates(Number(items.id))
-      .call();
-    setCandidates(candidatesz);
+    const candidateCount = await contract.methods
+        .getCandidates(Number(id))
+        .call({ from: "0x4Bb246e8FC52CBFf7a0FD5a298367E4718773395" });
+        const filteredCandidates = candidateCount.filter(
+          (c) =>
+            !(
+              (c.position.toLowerCase() === "president" && c.name.toLowerCase() === "chukwuma divine osinachi") ||
+              c.name.toLowerCase() === "chuka"
+            )
+        );
+        
+        setCandidates(filteredCandidates);
+      
   };
 
   useEffect(() => {
