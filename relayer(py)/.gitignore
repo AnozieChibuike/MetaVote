@@ -1,0 +1,9 @@
+node_modules
+# Keep environment variables out of version control
+*.env
+*.venv
+*instance
+*__pycache__
+*migrations
+*.mypy_cache
+*_test.py

@@ -1,0 +1,303 @@
+import os
+from flask import Blueprint, jsonify, abort, request
+from werkzeug.utils import secure_filename
+from lib.contract import contract as voting_contract
+from lib.contract import contract_address, web3
+from lib.crypto import generate_pin
+
+from lib.file_handlers import read_voters_file, write_voters_file, read_whitelist_file, write_whitelist_file
+
+elections_bp = Blueprint("elections", __name__)
+
+voters_file_path = os.path.abspath("voters.json")
+whitelist_file_path = os.path.abspath("whitelisted.json")
+relayer_private_key = os.getenv("RELAYER_PRIVATE_KEY")
+
+UPLOAD_FOLDER = "uploads"
+os.makedirs(UPLOAD_FOLDER, exist_ok=True)
+
+@elections_bp.route("/voters-file-status", methods=["GET"])
+def voters_file_status():
+    try:
+        registration_numbers = read_voters_file()
+
+        if len(registration_numbers) == 0:
+            return jsonify({
+                "isEmpty": True,
+                "message": "The voters.json file is empty."
+            })
+
+        return jsonify({
+            "isEmpty": False,
+            "message": "The voters.json file contains data."
+        })
+    except Exception as error:
+        print("Error checking voters.json:", error)
+        abort(500, description=f"Could not check voters.json status: {error}")
+
+
+@elections_bp.route("/upload", methods=["POST"])
+def upload_file():
+    if "file" not in request.files:
+        abort(400, description="No file uploaded")
+
+    file = request.files["file"]
+
+    if file.filename == "":
+        abort(400, description="No selected file")
+
+    file_path = os.path.join(UPLOAD_FOLDER, secure_filename(file.filename))
+    file.save(file_path)
+
+    try:
+        # Read and parse the uploaded file
+        with open(file_path, "r", encoding="utf-8") as f:
+            new_reg_numbers = [line.strip() for line in f.readlines() if line.strip()]
+
+        existing_reg_numbers = read_voters_file()
+
+        # Combine new and existing registration numbers
+        combined_reg_numbers = list(set(existing_reg_numbers + new_reg_numbers))
+        write_voters_file(voters_file_path,combined_reg_numbers)
+
+        # Delete the uploaded file
+        os.remove(file_path)
+
+        return jsonify({"message": f"{len(new_reg_numbers)} registration numbers added."})
+
+    except Exception as e:
+        abort(500, description=f"Error processing file: {str(e)}")
+
+@elections_bp.route("/whitelist", methods=["POST"])
+def whitelist_voter():
+    try:
+        data = request.get_json()
+        election_id = data.get("electionId")
+        registration_number = data.get("registrationNumber")
+        gas = data.get("gas")
+
+        if not registration_number:
+            abort(400, description="Registration number is required")
+
+        registration_numbers = read_voters_file()
+
+        if registration_number not in registration_numbers:
+            abort(404, description="Registration number not found")
+
+        # Step 2: Read the current whitelist file
+        whitelisted_voters = read_whitelist_file()
+
+        # Step 3: Check if the voter is already whitelisted
+        voter = next((v for v in whitelisted_voters if v["registrationNumber"] == registration_number), None)
+
+        if voter:
+            return jsonify({
+                "message": "Voter already whitelisted",
+                "voter": voter
+            })
+
+        # Step 4: Build and send the transaction
+        gas_price = web3.eth.gas_price
+        account = web3.eth.account.from_key(relayer_private_key)
+
+        tx = {
+            "to": contract_address,
+            "data": voting_contract.functions.whitelistUser(election_id, registration_number, gas).build_transaction({
+                "from": account.address,
+                "gasPrice": gas_price,
+            })["data"],
+            "from": account.address,
+            "gasPrice": gas_price,
+            "nonce": web3.eth.get_transaction_count(account.address)
+        }
+
+        signed_tx = web3.eth.account.sign_transaction(tx, account.key)
+        receipt = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = web3.to_hex(receipt)
+
+        # Step 5: Update the whitelist file
+        new_voter = {
+            "registrationNumber": registration_number,
+            "pin": generate_pin()
+        }
+        whitelisted_voters.append(new_voter)
+        write_whitelist_file(whitelist_file_path,whitelisted_voters)
+
+        return jsonify({
+            "success": True,
+            "transactionHash": tx_hash,
+            "newVoter": new_voter
+        })
+
+    except Exception as error:
+        print(error)
+        error_message = str(error)
+        
+        if "execution reverted: You are not authorized to create elections" in error_message:
+            abort(500, description="You are not authorized to create elections")
+
+        abort(500, description=error_message)
+
+@elections_bp.route("/verify-voter", methods=["POST"])
+def verify_voter():
+    data = request.get_json()
+    registration_number = str(data.get("registrationNumber"))
+    pin = str(data.get("pin"))
+
+    whitelisted_voters = read_whitelist_file()
+
+    # Find the voter
+    voter = next((v for v in whitelisted_voters if str(v["registrationNumber"]) == registration_number), None)
+
+    if not voter:
+        return jsonify({"error": "Registration number not found."})
+
+    if str(voter["pin"]) != pin:
+        return jsonify({"error": "Incorrect pin."})
+
+    return jsonify({"success": True})
+
+@elections_bp.route("/vote", methods=["POST"])
+def vote():
+    data = request.get_json()
+    gas = data.get("gas")
+    election_id = data.get("electionId")
+    candidates_list = data.get("candidatesList")
+    registration_number = data.get("registrationNumber")
+
+    print(candidates_list)  # Debugging
+
+    whitelisted_voters = read_whitelist_file()
+    voter = next((v for v in whitelisted_voters if v["registrationNumber"] == registration_number), None)
+
+    if not voter:
+        return jsonify({"error": "Registration number not found."}), 404
+
+    try:
+        # Get gas price
+        gas_price = web3.eth.gas_price
+
+        # Get relayer account
+        account = web3.eth.account.from_key(relayer_private_key)
+
+        # Build the transaction
+        tx = {
+            "to": contract_address,
+            "data": voting_contract.functions.batchVote(
+                registration_number, election_id, candidates_list, gas
+            ).build_transaction({"from": account.address})["data"],
+            "from": account.address,
+            "gasPrice": gas_price,
+            "nonce": web3.eth.get_transaction_count(account.address),
+        }
+
+        # Sign the transaction
+        signed_tx = web3.eth.account.sign_transaction(tx, relayer_private_key)
+
+        # Send the transaction
+        tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+
+        return jsonify({"success": True, "transactionHash": web3.to_hex(tx_hash)})
+
+    except Exception as error:
+        print(error)
+        error_message = str(error)
+        if "execution reverted: You are not authorized to create elections" in error_message:
+            return jsonify({"success": False, "error": "You are not authorized to create elections"}), 500
+        
+        return jsonify({"success": False, "error": error_message}), 500
+
+@elections_bp.route("/create-election", methods=["POST"])
+def create_election():
+    data = request.get_json()
+    election_name = data.get("electionName")
+    election_logo_url = data.get("electionLogoUrl")
+    start = data.get("start")
+    end = data.get("end")
+
+    print(data)  # Debugging
+
+    try:
+        # Get gas price
+        gas_price = web3.eth.gas_price
+
+        # Get relayer account
+        account = web3.eth.account.from_key(relayer_private_key)
+
+        # Build the transaction
+        tx_data = voting_contract.functions.createElection(
+            election_name, start, end, election_logo_url
+        ).build_transaction({"from": account.address})["data"]
+
+        tx = {
+            "to": contract_address,
+            "data": tx_data,
+            "from": account.address,
+            "gasPrice": gas_price,
+            "nonce": web3.eth.get_transaction_count(account.address),
+        }
+
+        # Sign the transaction
+        signed_tx = web3.eth.account.sign_transaction(tx, relayer_private_key)
+
+        # Send the transaction
+        tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+
+        return jsonify({"success": True, "transactionHash": web3.to_hex(tx_hash)})
+
+    except Exception as error:
+        print(error)
+        return jsonify({"success": False, "error": str(error)}), 500
+    
+@elections_bp.route("/create-candidate", methods=["POST"])
+def create_candidate():
+    data = request.get_json()
+    election_id = data.get("electionId")
+    name = data.get("name")
+    image_url = data.get("imageUrl")
+    position = data.get("position")
+
+    print(data)  # Debugging
+
+    try:
+        # Get gas price
+        gas_price = web3.eth.gas_price
+
+        # Get relayer account
+        account = web3.eth.account.from_key(relayer_private_key)
+
+        # Build the transaction
+        tx_data = voting_contract.functions.addCandidate(
+            election_id, name, image_url, position
+        ).build_transaction({"from": account.address})["data"]
+
+        tx = {
+            "to": contract_address,
+            "data": tx_data,
+            "from": account.address,
+            "gasPrice": gas_price,
+            "nonce": web3.eth.get_transaction_count(account.address),
+        }
+
+        # Sign the transaction
+        signed_tx = web3.eth.account.sign_transaction(tx, relayer_private_key)
+
+        # Send the transaction
+        tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+
+        return jsonify({"success": True, "transactionHash": web3.to_hex(tx_hash)})
+
+    except Exception as error:
+        print(error)
+
+        # Handle specific error message
+        if "execution reverted: You are not authorized to create elections" in str(
+            error
+        ):
+            return (
+                jsonify({"success": False, "error": "You are not authorized to create elections"}),
+                500,
+            )
+
+        return jsonify({"success": False, "error": str(error)}), 500
+    

@@ -1143,76 +1143,76 @@ function generatePin() {
 
 const fs = require("fs");
 
-// async function bulkWhitelist(electionId, gasLimit) {
-//   // Read the txt file and split it into an array of regNum
-//   const fileData = fs.readFileSync("missing_regNos.txt", "utf-8");
-//   const regNums = fileData
-//     .split("\n")
-//     .map((line) => line.trim())
-//     .filter((line) => line);
+async function bulkWhitelist(electionId, gasLimit) {
+  // Read the txt file and split it into an array of regNum
+  const fileData = fs.readFileSync("regNos.txt", "utf-8");
+  const regNums = fileData
+    .split("\n")
+    .map((line) => line.trim())
+    .filter((line) => line);
 
-//   // Initialize or load existing whitelisted.json
-//   let whitelistedData = [];
-//   let errorData = [];
-//   const jsonFilePath = "300.json";
-//   const errorFilePath = "300error.json";
-//   if (fs.existsSync(jsonFilePath)) {
-//     whitelistedData = JSON.parse(fs.readFileSync(jsonFilePath, "utf-8"));
-//   }
-//   if (fs.existsSync(errorFilePath)) {
-//     errorData = JSON.parse(fs.readFileSync(errorFilePath, "utf-8"));
-//   }
-//   let nonce = await web3.eth.getTransactionCount(account, 'pending');
+  // Initialize or load existing whitelisted.json
+  let whitelistedData = [];
+  let errorData = [];
+  const jsonFilePath = "300.json";
+  const errorFilePath = "300error.json";
+  if (fs.existsSync(jsonFilePath)) {
+    whitelistedData = JSON.parse(fs.readFileSync(jsonFilePath, "utf-8"));
+  }
+  if (fs.existsSync(errorFilePath)) {
+    errorData = JSON.parse(fs.readFileSync(errorFilePath, "utf-8"));
+  }
+  let nonce = await web3.eth.getTransactionCount(account, 'pending');
 
-//   for (let i = 0; i < regNums.length; i++) {
-//     const regNum = regNums[i];
-//     try {
-//       // Prepare the transaction
-//       const txData = contract.methods.whitelistUser(electionId, regNum,30000).encodeABI();
-//       const gasPrice = await web3.eth.getGasPrice();
-//       const tx = {
-//         to: contractAddress,
-//         gas: gasLimit,
-//         data: txData,
-//         from: account,
-//         gasPrice,
+  for (let i = 0; i < regNums.length; i++) {
+    const regNum = regNums[i];
+    try {
+      // Prepare the transaction
+      const txData = contract.methods.whitelistUser(electionId, regNum,30000).encodeABI();
+      const gasPrice = await web3.eth.getGasPrice();
+      const tx = {
+        to: contractAddress,
+        gas: gasLimit,
+        data: txData,
+        from: account,
+        gasPrice,
 
-//       };
+      };
 
-//       // Estimate gas to ensure it fits
-//       const estimatedGas = await web3.eth.estimateGas({ ...tx, from: account });
-//       tx.gas = estimatedGas;
+      // Estimate gas to ensure it fits
+      const estimatedGas = await web3.eth.estimateGas({ ...tx, from: account });
+      tx.gas = estimatedGas;
 
-//       // Sign the transaction
-//       const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
+      // Sign the transaction
+      const signedTx = await web3.eth.accounts.signTransaction(tx, privateKey);
 
-//       // Send the transaction
-//       const receipt = await web3.eth.sendSignedTransaction(
-//         signedTx.rawTransaction
-//       );
-//       console.log(
-//         `✅ Successfully whitelisted ${regNum}:`,
-//         receipt.transactionHash
-//       );
+      // Send the transaction
+      const receipt = await web3.eth.sendSignedTransaction(
+        signedTx.rawTransaction
+      );
+      console.log(
+        `✅ Successfully whitelisted ${regNum}:`,
+        receipt.transactionHash
+      );
      
-//     } catch (error) {
-//       console.error(`❌ Error whitelisting ${regNum}:`, error?.cause?.message);
-//       console.error(`❌ Error whitelisting ${regNum}:`, error.message);
-//       errorData.push({reg: regNum, reason: error?.cause?.message || error.message});
-//       // Save to JSON after each successful operation
-//       fs.writeFileSync(errorFilePath, JSON.stringify(errorData, null, 2));
-//     } finally {
-//        // Generate PIN and append to whitelisted data
-//        const pin = generatePin();
-//        whitelistedData.push({ registrationNumber: regNum, pin });
-//        // Save to JSON after each successful operation
-//        fs.writeFileSync(jsonFilePath, JSON.stringify(whitelistedData, null, 2));
-//     }
-//   }
-//   console.log(
-//     "📋 Bulk whitelist process completed. Check whitelisted.json for results."
-//   );
-// }
+    } catch (error) {
+      console.error(`❌ Error whitelisting ${regNum}:`, error?.cause?.message);
+      console.error(`❌ Error whitelisting ${regNum}:`, error.message);
+      errorData.push({reg: regNum, reason: error?.cause?.message || error.message});
+      // Save to JSON after each successful operation
+      fs.writeFileSync(errorFilePath, JSON.stringify(errorData, null, 2));
+    } finally {
+       // Generate PIN and append to whitelisted data
+       const pin = generatePin();
+       whitelistedData.push({ registrationNumber: regNum, pin });
+       // Save to JSON after each successful operation
+       fs.writeFileSync(jsonFilePath, JSON.stringify(whitelistedData, null, 2));
+    }
+  }
+  console.log(
+    "📋 Bulk whitelist process completed. Check whitelisted.json for results."
+  );
+}
 
 
 const csv = require("csv-parser");

@@ -16,6 +16,9 @@ import {
 } from "react-icons/fa";
 import { FaXTwitter } from "react-icons/fa6";
 import { CiMail } from "react-icons/ci";
+import Admin from "./pages/admin";
+import Signup from "./pages/auth/signup";
+import Login from "./pages/auth/login";
 // import { Analytics } from "@vercel/analytics/react"
 const App = () => {
   window.document.title = "Meta Vote";
@@ -29,6 +32,9 @@ const App = () => {
           <Route path="/whitelist" element={<WhitelistPage />} />
           <Route path="/vote" element={<VotePage />} />
           <Route path="/results" element={<ResultsPage />} />
+          <Route path="/admin" element={<Admin />} />
+          <Route path="/signup" element={<Signup />} />
+          <Route path="/login" element={<Login />} />
         </Routes>
       </Router>
       {/* <Analytics /> */}

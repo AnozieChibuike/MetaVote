@@ -14,7 +14,7 @@ const web3 = new Web3.Web3(process.env.INFURA_URL);
 const contractAddress = process.env.CONTRACT_ADDRESS;
 const contractABI = [
   {
-    inputs: [
+    "inputs": [
       {
         internalType: "uint256",
         name: "_electionId",
