@@ -160,28 +160,28 @@ contract_abi = [
     "type": "error"
   },
   {
-    "anonymous": false,
+    "anonymous": False,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "electionId",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "candidateId",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "string",
         "name": "name",
         "type": "string"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "string",
         "name": "imageURL",
         "type": "string"
@@ -191,22 +191,22 @@ contract_abi = [
     "type": "event"
   },
   {
-    "anonymous": false,
+    "anonymous": False,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "electionId",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "serviceFee",
         "type": "uint256"
@@ -216,58 +216,58 @@ contract_abi = [
     "type": "event"
   },
   {
-    "anonymous": false,
+    "anonymous": False,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "id",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "string",
         "name": "name",
         "type": "string"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "candidateCount",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "voterCount",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "votingStartTime",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "votingEndTime",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "bool",
         "name": "active",
         "type": "bool"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "balance",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "address",
         "name": "creator",
         "type": "address"
@@ -277,10 +277,10 @@ contract_abi = [
     "type": "event"
   },
   {
-    "anonymous": false,
+    "anonymous": False,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "address",
         "name": "creator",
         "type": "address"
@@ -290,10 +290,10 @@ contract_abi = [
     "type": "event"
   },
   {
-    "anonymous": false,
+    "anonymous": False,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "address",
         "name": "creator",
         "type": "address"
@@ -303,16 +303,16 @@ contract_abi = [
     "type": "event"
   },
   {
-    "anonymous": false,
+    "anonymous": False,
     "inputs": [
       {
-        "indexed": true,
+        "indexed": True,
         "internalType": "address",
         "name": "previousOwner",
         "type": "address"
       },
       {
-        "indexed": true,
+        "indexed": True,
         "internalType": "address",
         "name": "newOwner",
         "type": "address"
@@ -383,22 +383,22 @@ contract_abi = [
     "type": "function"
   },
   {
-    "anonymous": false,
+    "anonymous": False,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "electionId",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "address",
         "name": "voter",
         "type": "address"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "candidateId",
         "type": "uint256"
@@ -408,16 +408,16 @@ contract_abi = [
     "type": "event"
   },
   {
-    "anonymous": false,
+    "anonymous": False,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "electionId",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "address",
         "name": "voter",
         "type": "address"
@@ -450,22 +450,22 @@ contract_abi = [
     "type": "function"
   },
   {
-    "anonymous": false,
+    "anonymous": False,
     "inputs": [
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "electionId",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "uint256",
         "name": "amount",
         "type": "uint256"
       },
       {
-        "indexed": false,
+        "indexed": False,
         "internalType": "address",
         "name": "creator",
         "type": "address"

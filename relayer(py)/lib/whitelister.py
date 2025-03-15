@@ -1,12 +1,10 @@
 import json
 import time
-from web3 import Web3
 import os
 from dotenv import load_dotenv
-import random
-from lib.contract import contract
-from lib.contract import contract_address, web3 as w3
-from lib.crypto import generate_pin
+from contract import contract
+from contract import web3 as w3
+from crypto import generate_pin
 
 # Load environment variables
 load_dotenv()

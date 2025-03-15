@@ -269,6 +269,15 @@ function ManageElection() {
         >
           http://{window.location.host}/vote?id={Number(items ? items.id : 0)}
         </a>
+        <p className="mt-3">Results Link: </p>
+        <a
+          className="italic text-blue-600"
+          href={`http://${window.location.host}/results?id=${Number(
+            items ? items.id : 0
+          )}`}
+        >
+          http://{window.location.host}/results?id={Number(items ? items.id : 0)}
+        </a>
         <p className="mt-3">Voter's WhiteList Link: </p>
         <a
           className="italic text-blue-600"
@@ -445,7 +454,7 @@ const CandidateModal = ({
             Candidate created successfully, click this{" "}
             <a
               target="_blank"
-              href={`https://rpc.sepolia-api.lisk.com/tx/${body.transactionHash}`}
+              href={`https://sepolia-blockscout.lisk.com/tx/${body.transactionHash}`}
               class="font-semibold underline hover:no-underline"
             >
               link

@@ -2,7 +2,7 @@ import os
 from flask import Blueprint, jsonify, abort, request
 from werkzeug.utils import secure_filename
 from lib.contract import contract as voting_contract
-from lib.contract import contract_address, web3
+from lib.contract import contract_address, web3, URL
 from lib.crypto import generate_pin
 
 from lib.file_handlers import read_voters_file, write_voters_file, read_whitelist_file, write_whitelist_file
@@ -19,7 +19,7 @@ os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 @elections_bp.route("/voters-file-status", methods=["GET"])
 def voters_file_status():
     try:
-        registration_numbers = read_voters_file()
+        registration_numbers = read_voters_file(voters_file_path)
 
         if len(registration_numbers) == 0:
             return jsonify({
@@ -54,7 +54,7 @@ def upload_file():
         with open(file_path, "r", encoding="utf-8") as f:
             new_reg_numbers = [line.strip() for line in f.readlines() if line.strip()]
 
-        existing_reg_numbers = read_voters_file()
+        existing_reg_numbers = read_voters_file(read_voters_file)
 
         # Combine new and existing registration numbers
         combined_reg_numbers = list(set(existing_reg_numbers + new_reg_numbers))
@@ -79,13 +79,13 @@ def whitelist_voter():
         if not registration_number:
             abort(400, description="Registration number is required")
 
-        registration_numbers = read_voters_file()
+        registration_numbers = read_voters_file(read_voters_file)
 
         if registration_number not in registration_numbers:
             abort(404, description="Registration number not found")
 
         # Step 2: Read the current whitelist file
-        whitelisted_voters = read_whitelist_file()
+        whitelisted_voters = read_whitelist_file(whitelist_file_path)
 
         # Step 3: Check if the voter is already whitelisted
         voter = next((v for v in whitelisted_voters if v["registrationNumber"] == registration_number), None)
@@ -100,19 +100,24 @@ def whitelist_voter():
         gas_price = web3.eth.gas_price
         account = web3.eth.account.from_key(relayer_private_key)
 
-        tx = {
-            "to": contract_address,
-            "data": voting_contract.functions.whitelistUser(election_id, registration_number, gas).build_transaction({
-                "from": account.address,
-                "gasPrice": gas_price,
-            })["data"],
+        tx_data =  voting_contract.functions.whitelistUser(election_id, registration_number, gas).build_transaction({
             "from": account.address,
             "gasPrice": gas_price,
-            "nonce": web3.eth.get_transaction_count(account.address)
+        })["data"]
+
+        tx = {
+            "to": contract_address,
+            "data": tx_data,
+            "from": account.address,
+            "nonce": web3.eth.get_transaction_count(account.address),
+            "gas": web3.eth.estimate_gas({"to": contract_address, "data": tx_data, "from": account.address}),
+            "maxFeePerGas": web3.to_wei(2, "gwei"),  # Adjust as needed
+            "maxPriorityFeePerGas": web3.to_wei(1, "gwei"),
+            "chainId": web3.eth.chain_id,  # Ensure correct chain ID
         }
 
         signed_tx = web3.eth.account.sign_transaction(tx, account.key)
-        receipt = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        receipt = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
         tx_hash = web3.to_hex(receipt)
 
         # Step 5: Update the whitelist file
@@ -144,7 +149,7 @@ def verify_voter():
     registration_number = str(data.get("registrationNumber"))
     pin = str(data.get("pin"))
 
-    whitelisted_voters = read_whitelist_file()
+    whitelisted_voters = read_whitelist_file(whitelist_file_path)
 
     # Find the voter
     voter = next((v for v in whitelisted_voters if str(v["registrationNumber"]) == registration_number), None)
@@ -167,7 +172,7 @@ def vote():
 
     print(candidates_list)  # Debugging
 
-    whitelisted_voters = read_whitelist_file()
+    whitelisted_voters = read_whitelist_file(whitelist_file_path)
     voter = next((v for v in whitelisted_voters if v["registrationNumber"] == registration_number), None)
 
     if not voter:
@@ -179,23 +184,27 @@ def vote():
 
         # Get relayer account
         account = web3.eth.account.from_key(relayer_private_key)
-
+        tx_data = voting_contract.functions.batchVote(
+                registration_number, election_id, candidates_list, gas
+            ).build_transaction({"from": account.address})["data"]
         # Build the transaction
+        
         tx = {
             "to": contract_address,
-            "data": voting_contract.functions.batchVote(
-                registration_number, election_id, candidates_list, gas
-            ).build_transaction({"from": account.address})["data"],
+            "data": tx_data,
             "from": account.address,
-            "gasPrice": gas_price,
             "nonce": web3.eth.get_transaction_count(account.address),
+            "gas": web3.eth.estimate_gas({"to": contract_address, "data": tx_data, "from": account.address}),
+            "maxFeePerGas": web3.to_wei(2, "gwei"),  # Adjust as needed
+            "maxPriorityFeePerGas": web3.to_wei(1, "gwei"),
+            "chainId": web3.eth.chain_id,  # Ensure correct chain ID
         }
 
         # Sign the transaction
         signed_tx = web3.eth.account.sign_transaction(tx, relayer_private_key)
 
         # Send the transaction
-        tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
 
         return jsonify({"success": True, "transactionHash": web3.to_hex(tx_hash)})
 
@@ -215,11 +224,14 @@ def create_election():
     start = data.get("start")
     end = data.get("end")
 
-    print(data)  # Debugging
+    print(URL)  # Debugging
 
     try:
         # Get gas price
+        print(web3)
+        print(web3.eth.get_block("latest"))
         gas_price = web3.eth.gas_price
+        print(gas_price)
 
         # Get relayer account
         account = web3.eth.account.from_key(relayer_private_key)
@@ -233,19 +245,22 @@ def create_election():
             "to": contract_address,
             "data": tx_data,
             "from": account.address,
-            "gasPrice": gas_price,
             "nonce": web3.eth.get_transaction_count(account.address),
+            "gas": web3.eth.estimate_gas({"to": contract_address, "data": tx_data, "from": account.address}),
+            "maxFeePerGas": web3.to_wei(2, "gwei"),  # Adjust as needed
+            "maxPriorityFeePerGas": web3.to_wei(1, "gwei"),
+            "chainId": web3.eth.chain_id,  # Ensure correct chain ID
         }
 
         # Sign the transaction
         signed_tx = web3.eth.account.sign_transaction(tx, relayer_private_key)
 
+        print(signed_tx)
         # Send the transaction
-        tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
-
+        tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
         return jsonify({"success": True, "transactionHash": web3.to_hex(tx_hash)})
 
-    except Exception as error:
+    except NameError as error:
         print(error)
         return jsonify({"success": False, "error": str(error)}), 500
     
@@ -270,20 +285,22 @@ def create_candidate():
         tx_data = voting_contract.functions.addCandidate(
             election_id, name, image_url, position
         ).build_transaction({"from": account.address})["data"]
-
         tx = {
             "to": contract_address,
             "data": tx_data,
             "from": account.address,
-            "gasPrice": gas_price,
             "nonce": web3.eth.get_transaction_count(account.address),
+            "gas": web3.eth.estimate_gas({"to": contract_address, "data": tx_data, "from": account.address}),
+            "maxFeePerGas": web3.to_wei(2, "gwei"),  # Adjust as needed
+            "maxPriorityFeePerGas": web3.to_wei(1, "gwei"),
+            "chainId": web3.eth.chain_id,  # Ensure correct chain ID
         }
 
         # Sign the transaction
         signed_tx = web3.eth.account.sign_transaction(tx, relayer_private_key)
 
         # Send the transaction
-        tx_hash = web3.eth.send_raw_transaction(signed_tx.rawTransaction)
+        tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
 
         return jsonify({"success": True, "transactionHash": web3.to_hex(tx_hash)})
 

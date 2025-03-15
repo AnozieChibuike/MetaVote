@@ -11,7 +11,7 @@
 // }
 
 // const REACT_APP_SERVER_URL = "http://localhost:4000"
-// const REACT_APP_SERVER_URL = "http://localhost:4000"
-const REACT_APP_SERVER_URL = "https://metavote-production.up.railway.app"
+const REACT_APP_SERVER_URL = "http://localhost:5000"
+// const REACT_APP_SERVER_URL = "https://metavote-production.up.railway.app"
 
 export default REACT_APP_SERVER_URL

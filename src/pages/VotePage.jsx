@@ -363,6 +363,14 @@ const VotePage = () => {
             </>
           )}
         </div>
+        <span className="inline">See the live election results </span>
+        <a
+          className="italic text-blue-600"
+          target="_blank"
+          href={`http://${window.location.host}/results?id=${Number(id)}`}
+        >
+          here
+        </a>
         <h2 className="text-2xl text-center my-3 font-semibold">
           Vote for a Candidate
         </h2>

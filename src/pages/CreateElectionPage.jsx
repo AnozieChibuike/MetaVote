@@ -117,7 +117,7 @@ const CreateElectionPage = () => {
             Election created successfully, click this{" "}
             <a
               target="_blank"
-              href={`https://rpc.sepolia-api.lisk.com/tx/${body.transactionHash}`}
+              href={`https://sepolia-blockscout.lisk.com/tx/${body.transactionHash}`}
               class="font-semibold underline hover:no-underline"
             >
               link
