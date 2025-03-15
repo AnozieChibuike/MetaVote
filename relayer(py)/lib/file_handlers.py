@@ -6,6 +6,7 @@ def read_voters_file(voters_file_path):
     if not os.path.exists(voters_file_path):
         with open(voters_file_path, "w") as file:
             json.dump({"registrationNumbers": []}, file, indent=2)
+            
 
     # Read the file and return the registrationNumbers list
     with open(voters_file_path, "r") as file:

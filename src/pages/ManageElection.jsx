@@ -51,7 +51,7 @@ function ManageElection() {
   const fetchFileStatus = async () => {
     try {
       const response = await fetch(
-        `${REACT_APP_SERVER_URL}/voters-file-status`
+        `${REACT_APP_SERVER_URL}/voters-file-status?election_id=${id}`
       );
       const data = await response.json();
       setFileStatus(data?.isEmpty);
@@ -207,6 +207,29 @@ function ManageElection() {
     }
   };
 
+
+  // Handle delete file
+
+  const handleDelete = async () => {
+    try {
+      const response = await fetch(
+        `${REACT_APP_SERVER_URL}/delete-voters-file?election_id=${id}`,
+        {
+          method: "DELETE",
+          headers: {
+          "Content-Type": "application/json"
+          }
+        }
+      );
+      const data = await response.json();
+      setAlert(data?.message)
+      location.reload()
+    } catch (error) {
+      console.error("Error fetching file status:", error);
+      setRedAlert(error.message)
+    }
+  }
+
   // Handle file upload
   const handleUpload = async () => {
     if (!file) {
@@ -216,6 +239,7 @@ function ManageElection() {
 
     const formData = new FormData();
     formData.append("file", file);
+    formData.append("election_id", id);
     setLoading(true)
     try {
       const response = await fetch(`${REACT_APP_SERVER_URL}/upload`, {
@@ -289,6 +313,7 @@ function ManageElection() {
           {Number(items ? items.id : 0)}
         </a>
         <div className="">
+          <p className="italic">Upload a text file of eligible voters</p>
           {
             fileStatus ?
             <>
@@ -303,13 +328,23 @@ function ManageElection() {
                 Upload
               </Button>
             </> : <>
+            <div className="flex gap-3 items-center">
             <p>Voter's file exist</p>
+            <a className="bg-green-600 p-3" href={`${REACT_APP_SERVER_URL}/static/voters/${id}.json`} target="_blank">
+                View File
+              </a>
+            <Button className="bg-red-600" onClick={handleDelete}>
+                Delete File
+              </Button>
+            </div>
               <input
                 className="my-2"
                 type="file"
                 accept=".txt" // Ensures only .txt files are selectable
                 onChange={handleFileChange}
               />
+              
+             
               <Button className="bg-blue-600" onClick={handleUpload}>
                 Update
               </Button>

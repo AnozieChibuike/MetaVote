@@ -19,6 +19,7 @@ import { CiMail } from "react-icons/ci";
 import Admin from "./pages/admin";
 import Signup from "./pages/auth/signup";
 import Login from "./pages/auth/login";
+import WhiteListed from "./pages/WhiteListed";
 // import { Analytics } from "@vercel/analytics/react"
 const App = () => {
   window.document.title = "Meta Vote";
@@ -30,6 +31,7 @@ const App = () => {
           <Route path="/create-election" element={<CreateElectionPage />} />
           <Route path="/manage" element={<ManageElection />} />
           <Route path="/whitelist" element={<WhitelistPage />} />
+          <Route path="/whitelisted-voters" element={<WhiteListed />} />
           <Route path="/vote" element={<VotePage />} />
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/admin" element={<Admin />} />

@@ -4,6 +4,7 @@ from werkzeug.utils import secure_filename
 from lib.contract import contract as voting_contract
 from lib.contract import contract_address, web3, URL
 from lib.crypto import generate_pin
+import json
 
 from lib.file_handlers import read_voters_file, write_voters_file, read_whitelist_file, write_whitelist_file
 
@@ -16,10 +17,62 @@ relayer_private_key = os.getenv("RELAYER_PRIVATE_KEY")
 UPLOAD_FOLDER = "uploads"
 os.makedirs(UPLOAD_FOLDER, exist_ok=True)
 
+@elections_bp.route("/delete-voters-file", methods=["DELETE"])
+def delete_voters_file():
+    try:
+        election_id = request.args.get("election_id")
+        if not election_id:
+            abort(400, description="No election id supplied")
+
+        file_path = f"app/static/voters/{election_id}.json"
+
+        if not os.path.exists(file_path):
+            return jsonify({
+                "success": False,
+                "message": "The voters.json file does not exist."
+            })
+
+        # Check if file is empty
+        registration_numbers = read_voters_file(file_path)
+
+        if not registration_numbers:  # Empty list or None
+            os.remove(file_path)  # Delete the empty file
+            return jsonify({
+                "success": True,
+                "message": "The voters.json file was empty and has been deleted."
+            })
+
+        # Delete the non-empty file
+        os.remove(file_path)
+        return jsonify({
+            "success": True,
+            "message": "The voters.json file was deleted successfully."
+        })
+
+    except FileNotFoundError:
+        return jsonify({
+            "success": False,
+            "message": "File not found, possibly deleted already."
+        })
+    except PermissionError:
+        abort(500, description="Permission denied while deleting the file.")
+    except Exception as error:
+        print("Error deleting voters.json:", error)
+        abort(500, description=f"Could not delete voters.json file: {error}")
+
 @elections_bp.route("/voters-file-status", methods=["GET"])
 def voters_file_status():
     try:
-        registration_numbers = read_voters_file(voters_file_path)
+        election_id = request.args.get("election_id")
+        if not election_id:
+            abort(400, description='No election id supplied')
+        if not os.path.exists(f"app/static/voters/{election_id}.json"):
+            return jsonify({
+                "isEmpty": True,
+                "message": "The voters.json file is empty."
+            })
+
+        registration_numbers = read_voters_file(f"app/static/voters/{election_id}.json")
 
         if len(registration_numbers) == 0:
             return jsonify({
@@ -35,14 +88,46 @@ def voters_file_status():
         print("Error checking voters.json:", error)
         abort(500, description=f"Could not check voters.json status: {error}")
 
+@elections_bp.route('/whitelisted-voters', methods=['GET'])
+def whitelisted_voters():
+    election_id = request.args.get("election_id")
+    if not election_id:
+        abort(400, description='No election id supplied')
+    whitelist_path = f'hidden/{election_id}.json'
+    if not os.path.exists(whitelist_path):
+        return jsonify({
+            "success": False,
+            "message": "No whitelisted voters found for this election.",
+            "data": []
+        })
+    try:
+        # Read the voters file
+        with open(whitelist_path, "r", encoding="utf-8") as f:
+            whitelisted_voters = json.load(f)
+
+        return jsonify({
+            "success": True,
+            "message": "Whitelisted voters retrieved successfully.",
+            "data": whitelisted_voters
+        })
+
+    except json.JSONDecodeError:
+        abort(500, description="Error reading the voters file. It may be corrupted.")
+    except Exception as e:
+        abort(500, description=f"An error occurred: {str(e)}")
+
 
 @elections_bp.route("/upload", methods=["POST"])
 def upload_file():
     if "file" not in request.files:
         abort(400, description="No file uploaded")
 
-    file = request.files["file"]
+    if "election_id" not in request.form:
+        abort(400, description="Missing election ID")
 
+    file = request.files["file"]
+    election_id = request.form["election_id"]  # Get election ID from form data
+    voters_file_path = f"app/static/voters/{election_id}.json"  # Use election ID in file path
     if file.filename == "":
         abort(400, description="No selected file")
 
@@ -54,7 +139,7 @@ def upload_file():
         with open(file_path, "r", encoding="utf-8") as f:
             new_reg_numbers = [line.strip() for line in f.readlines() if line.strip()]
 
-        existing_reg_numbers = read_voters_file(read_voters_file)
+        existing_reg_numbers = read_voters_file(voters_file_path)
 
         # Combine new and existing registration numbers
         combined_reg_numbers = list(set(existing_reg_numbers + new_reg_numbers))
@@ -65,7 +150,8 @@ def upload_file():
 
         return jsonify({"message": f"{len(new_reg_numbers)} registration numbers added."})
 
-    except Exception as e:
+    except NameError as e:
+        print(e)
         abort(500, description=f"Error processing file: {str(e)}")
 
 @elections_bp.route("/whitelist", methods=["POST"])
@@ -79,7 +165,8 @@ def whitelist_voter():
         if not registration_number:
             abort(400, description="Registration number is required")
 
-        registration_numbers = read_voters_file(read_voters_file)
+        registration_numbers = read_voters_file(f"app/static/voters/{election_id}.json")
+        
 
         if registration_number not in registration_numbers:
             abort(404, description="Registration number not found")
@@ -126,7 +213,7 @@ def whitelist_voter():
             "pin": generate_pin()
         }
         whitelisted_voters.append(new_voter)
-        write_whitelist_file(whitelist_file_path,whitelisted_voters)
+        write_whitelist_file(f"hidden/{election_id}.json",whitelisted_voters)
 
         return jsonify({
             "success": True,
@@ -145,11 +232,14 @@ def whitelist_voter():
 
 @elections_bp.route("/verify-voter", methods=["POST"])
 def verify_voter():
+    election_id = request.args.get("election_id")
+    if not election_id:
+        abort(400, description='No election id supplied')
     data = request.get_json()
     registration_number = str(data.get("registrationNumber"))
     pin = str(data.get("pin"))
 
-    whitelisted_voters = read_whitelist_file(whitelist_file_path)
+    whitelisted_voters = read_whitelist_file(f"hidden/{election_id}.json")
 
     # Find the voter
     voter = next((v for v in whitelisted_voters if str(v["registrationNumber"]) == registration_number), None)
@@ -172,7 +262,7 @@ def vote():
 
     print(candidates_list)  # Debugging
 
-    whitelisted_voters = read_whitelist_file(whitelist_file_path)
+    whitelisted_voters = read_whitelist_file(f"hidden/{election_id}.json")
     voter = next((v for v in whitelisted_voters if v["registrationNumber"] == registration_number), None)
 
     if not voter:

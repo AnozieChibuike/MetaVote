@@ -5,7 +5,7 @@ errors_bp = Blueprint("errors", __name__)
 # 400 - Bad Request
 @errors_bp.app_errorhandler(400)
 def bad_request(error):
-    return jsonify({"error": "Bad Request", "message": str(error)}), 400
+    return jsonify({"error": f"{str(error)}", "message": str(error)}), 400
 
 # 401 - Unauthorized
 @errors_bp.app_errorhandler(401)
@@ -35,7 +35,7 @@ def conflict(error):
 # 500 - Internal Server Error
 @errors_bp.app_errorhandler(500)
 def internal_server_error(error):
-    return jsonify({"error": "Internal Server Error", "message": f"Something went wrong on our end: {error}"}), 500
+    return jsonify({"error": f"{str(error)}", "message": f"Something went wrong on our end: {error}"}), 500
 
 # 502 - Bad Gateway
 @errors_bp.app_errorhandler(502)

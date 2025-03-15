@@ -7,3 +7,4 @@ node_modules
 *migrations
 *.mypy_cache
 *_test.py
+hidden/*

@@ -100,7 +100,7 @@ const VotePage = () => {
   const verifyVoter = async (pin, registrationNumber) => {
     setLoading(true);
     try {
-      const response = await fetch(`${REACT_APP_SERVER_URL}/verify-voter`, {
+      const response = await fetch(`${REACT_APP_SERVER_URL}/verify-voter?election_id=${id}`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json"
