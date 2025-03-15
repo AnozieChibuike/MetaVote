@@ -312,6 +312,16 @@ function ManageElection() {
           http://{window.location.host}/whitelist?id=
           {Number(items ? items.id : 0)}
         </a>
+        <p className="mt-3">WhiteListed Voters Link: </p>
+        <a
+          className="italic text-blue-600"
+          href={`http://${window.location.host}/whitelisted-voters?id=${Number(
+            items ? items.id : 0
+          )}`}
+        >
+          http://{window.location.host}/whitelisted-voters?id=
+          {Number(items ? items.id : 0)}
+        </a>
         <div className="">
           <p className="italic">Upload a text file of eligible voters</p>
           {
