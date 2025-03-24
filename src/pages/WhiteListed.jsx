@@ -12,8 +12,10 @@ import "react-toastify/dist/ReactToastify.css";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
 import REACT_APP_SERVER_URL from "../constant.js";
+import checkSession from "../helper/session.js";
 
 const WhiteListed = () => {
+  checkSession()
     const [data, setData] = useState([])
     const [election, setElection] = useState("");
     const web3 = new Web3(window.ethereum);
@@ -101,9 +103,9 @@ const WhiteListed = () => {
         {!!alert && <GreenAlertBox alert={alert} setAlert={setAlert} />}
         <div className="px-3">
             <div className="flex flex-row justify-between items-center p-3">
-            <h1 className="text-3xl font-bold text-blue-600">
+            <a className="text-3xl font-bold text-blue-600 cursor-pointer" href="/">
                 Meta<span className="text-red-400">Vote</span>
-            </h1>
+            </a>
             </div>
             <div className="flex justify-center items-center">
             <img src={election?.logoUrl} alt="LSLs" className="w-32" />

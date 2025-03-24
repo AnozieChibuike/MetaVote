@@ -17,9 +17,12 @@ import {
 import { FaXTwitter } from "react-icons/fa6";
 import { CiMail } from "react-icons/ci";
 import Admin from "./pages/admin";
-import Signup from "./pages/auth/signup";
-import Login from "./pages/auth/login";
+import AdminSignin from './pages/auth/AdminSignIn'
 import WhiteListed from "./pages/WhiteListed";
+import VoterSignin from "./pages/auth/VoterSignIn";
+import VoterDashboard from "./pages/VoterDashboard";
+import NotFound from "./pages/NotFound";
+import Verify from "./pages/auth/Verify";
 // import { Analytics } from "@vercel/analytics/react"
 const App = () => {
   window.document.title = "Meta Vote";
@@ -28,18 +31,19 @@ const App = () => {
       <Router>
         <Routes>
           <Route path="/" element={<Home />} />
-          <Route path="/create-election" element={<CreateElectionPage />} />
+          <Route path="/admin" element={<CreateElectionPage />} />
           <Route path="/manage" element={<ManageElection />} />
           <Route path="/whitelist" element={<WhitelistPage />} />
           <Route path="/whitelisted-voters" element={<WhiteListed />} />
           <Route path="/vote" element={<VotePage />} />
           <Route path="/results" element={<ResultsPage />} />
-          <Route path="/admin" element={<Admin />} />
-          <Route path="/signup" element={<Signup />} />
-          <Route path="/login" element={<Login />} />
+          <Route path="/admin-signin" element={<AdminSignin />} />
+          <Route path="/voter-signin" element={<VoterSignin />} />
+          <Route path="/voter-dashboard" element={<VoterDashboard />} />
+          <Route path="/verify" element={<Verify />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </Router>
-      {/* <Analytics /> */}
       <footer className="bg-gray-800 text-gray-300 py-8">
         <div className="max-w-7xl mx-auto px-4">
           <h1 className="text-xl font-bold text-blue-600 text-center">

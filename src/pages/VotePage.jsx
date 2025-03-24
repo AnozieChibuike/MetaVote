@@ -10,8 +10,10 @@ import "react-toastify/dist/ReactToastify.css";
 import REACT_APP_SERVER_URL, { rpcURL } from "../constant.js";
 import RedAlertBox from "../components/RedAlertBox.jsx";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
+import checkSession from "../helper/session.js";
 
 const VotePage = () => {
+  checkSession
   const [selectedCandidateInfo, setSelected] = useState(null);
   const [disabled, setDisabled] = useState(false);
   const navigate = useNavigate();
@@ -78,7 +80,6 @@ const VotePage = () => {
       navigate("/");
     }
   }, []);
-  // TODO: Check Has Voted works
   const checkVoted = async (registrationNumber) => {
     try {
       const voted = await contract.methods
@@ -295,7 +296,6 @@ const VotePage = () => {
   useEffect(() => {
     if (election?.id) updateStateBasedOnTimestamps(election?.votingStartTime, election?.votingEndTime)
   }, [election])
-  //TODO: Define vote function @backend... finalize
   const vote = async () => {
     setAlert("");
     setRedAlert("");
@@ -338,9 +338,9 @@ const VotePage = () => {
       {!!alert && <GreenAlertBox alert={alert} setAlert={setAlert} />}
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
-          <h1 className="text-3xl font-bold text-blue-600">
+          <a className="text-3xl font-bold text-blue-600 cursor-pointer" href="/">
             Meta<span className="text-red-400">Vote</span>
-          </h1>
+          </a>
         </div>
         {/* <div>
           <p id="voting"></p>

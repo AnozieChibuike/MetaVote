@@ -12,9 +12,11 @@ import "react-toastify/dist/ReactToastify.css";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
 import REACT_APP_SERVER_URL, { explorerURL } from "../constant.js";
+import checkSession from "../helper/session.js";
 // import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 
 const WhitelistPage = () => {
+  checkSession()
   const navigate = useNavigate();
   const web3 = new Web3(window.ethereum);
   const contract = new web3.eth.Contract(contractABI, contractAddress, {
@@ -177,9 +179,9 @@ const WhitelistPage = () => {
       )}
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
-          <h1 className="text-3xl font-bold text-blue-600">
+          <a className="text-3xl font-bold text-blue-600 cursor-pointer" href="/">
             Meta<span className="text-red-400">Vote</span>
-          </h1>
+          </a>
         </div>
         <a href={"/manage?id=" + id} className="text-blue-700">
           Back

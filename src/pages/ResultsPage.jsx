@@ -10,11 +10,13 @@ import { Button, Label, Modal, Table } from "flowbite-react";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
 import REACT_APP_SERVER_URL, { rpcURL } from "../constant.js";
+import checkSession from "../helper/session.js";
 
 const web3 = new Web3(rpcURL);
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 function ResultsPage() {
+  checkSession()
   const navigate = useNavigate();
   const [items, setItems] = useState({});
   const {
@@ -43,7 +45,7 @@ function ResultsPage() {
     setRedAlert("");
     if (!id) {
       setRedAlert("Election ID missing");
-      navigate("/create-election");
+      navigate("/");
       return;
     }
     loadElection();
@@ -173,9 +175,9 @@ function ResultsPage() {
       {!!redAlert && <RedAlertBox setAlert={setRedAlert} alert={redAlert} />}
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
-          <h1 className="text-3xl font-bold text-blue-600">
+          <a className="text-3xl font-bold text-blue-600 cursor-pointer" href="/">
             Meta<span className="text-red-400">Vote</span>
-          </h1>
+          </a>
         </div>
         <div className="flex justify-center items-center">
           <img src={items?.logoUrl}  className="w-32"/>

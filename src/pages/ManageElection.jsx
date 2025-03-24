@@ -10,11 +10,13 @@ import { Button, Label, Modal, Table, TextInput } from "flowbite-react";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
 import REACT_APP_SERVER_URL, { explorerURL, rpcURL } from "../constant.js";
+import checkSession from "../helper/session.js";
 
 const web3 = new Web3(rpcURL);
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 function ManageElection() {
+  checkSession()
   const [openModal, setOpenModal] = React.useState(false);
   // const [openDepositModal, setOpenDepositModal] = React.useState(false);
   const navigate = useNavigate();
@@ -34,11 +36,6 @@ function ManageElection() {
   // const [price, setPrice] = useState(null);
   const [candidates, setCandidates] = useState([]);
   // const balance = web3.utils.fromWei(Number(items ? items[9] : 0), "ether");
-
-  const getAdmin = () => {
-    const admin = sessionStorage.getItem("code") || null;
-    return admin;
-  };
 
   useEffect(() => {
     setAlert("");
@@ -67,13 +64,7 @@ function ManageElection() {
     setRedAlert("");
     if (!id) {
       setRedAlert("Election ID missing");
-      navigate("/create-election");
-      return;
-    }
-    const admin = getAdmin();
-    if (!admin) {
-      setRedAlert("Session expired relogin");
-      navigate("/");
+      navigate("/admin");
       return;
     }
     fetchFileStatus();
@@ -81,7 +72,6 @@ function ManageElection() {
   }, []);
 
   const loadElection = async () => {
-    if (!getAdmin()) return;
     setLoading(true);
     try {
       const election = await contract.methods.elections(Number(id)).call();
@@ -269,11 +259,11 @@ function ManageElection() {
       {!!redAlert && <RedAlertBox setAlert={setRedAlert} alert={redAlert} />}
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
-          <h1 className="text-3xl font-bold text-blue-600">
+          <a className="text-3xl font-bold text-blue-600 cursor-pointer" href="/">
             Meta<span className="text-red-400">Vote</span>
-          </h1>
+          </a>
         </div>
-        <a href="/create-election" className="text-blue-700">
+        <a href="/admin" className="text-blue-700">
           Back
         </a>
         <div className="flex justify-center items-center">

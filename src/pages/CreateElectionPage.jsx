@@ -11,8 +11,10 @@ import { useNavigate } from "react-router-dom";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
 import REACT_APP_SERVER_URL,{ explorerURL, rpcURL } from "../constant.js";
+import checkSession from "../helper/session.js";
 
 const CreateElectionPage = () => {
+  checkSession()
   const navigate = useNavigate();
   const [elect, setElect] = useState({});
   const [depElections, setDepElections] = useState([]);
@@ -23,11 +25,6 @@ const CreateElectionPage = () => {
   const [votingStart, setVotingStart] = useState("");
   const [votingEnd, setVotingEnd] = useState("");
   const [electionLoading, setElectionLoading] = useState(false);
-
-  const getAdmin = () => {
-    const admin = sessionStorage.getItem("code") || null;
-    return admin;
-  };
 
   const web3 = new Web3(rpcURL);
   const contract = new web3.eth.Contract(contractABI, contractAddress);
@@ -77,12 +74,6 @@ const CreateElectionPage = () => {
   console.log(REACT_APP_SERVER_URL);
 
   useEffect(() => {
-    const admin = getAdmin();
-    if (!admin) {
-      setRedAlert("Session expired relogin");
-      navigate("/");
-      return;
-    }
     populateElections();
   }, [redAlert]);
 
@@ -142,9 +133,9 @@ const CreateElectionPage = () => {
       {!!redAlert && <RedAlertBox alert={redAlert} setAlert={setRedAlert} />}
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
-          <h1 className="text-3xl font-bold text-blue-600">
+          <a className="text-3xl font-bold text-blue-600 cursor-pointer" href="/">
             Meta<span className="text-red-400">Vote</span>
-          </h1>
+          </a>
         </div>
         <h2 className="text-2xl text-center my-3 font-semibold">
           Create Election
