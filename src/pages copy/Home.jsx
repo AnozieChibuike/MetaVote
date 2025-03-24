@@ -6,10 +6,11 @@ import FaqSection from "../components/faqs";
 import Web3 from "web3";
 import Loader from "../components/loader.jsx";
 import { contractAddress, contractABI } from "../contract.js";
+import { rpcURL } from "../constant.js";
 
 const Home = () => {
   const { account, loading, setLoading } = useContext(AppContext);
-  const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
+  const web3 = new Web3(rpcURL);
   const contract = new web3.eth.Contract(contractABI, contractAddress);
 
   const whiteList = async () => {

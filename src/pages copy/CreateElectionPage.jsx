@@ -8,6 +8,7 @@ import FaqSection from "../components/faqs.jsx";
 import { Button, Label, Modal, TextInput } from "flowbite-react";
 import Loader from "../components/loader.jsx";
 import { useNavigate } from "react-router-dom";
+import { rpcURL } from "../constant.js";
 
 const CreateElectionPage = () => {
   const navigate = useNavigate();
@@ -20,7 +21,7 @@ const CreateElectionPage = () => {
   const [votingEnd, setVotingEnd] = useState("");
   const [electionLoading, setElectionLoading] = useState(false);
 
-  const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
+  const web3 = new Web3(rpcURL);
   const contract = new web3.eth.Contract(contractABI, contractAddress);
 
   // contract.events.ElectionCreated().on("data", (event) => {

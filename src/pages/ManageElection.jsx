@@ -9,9 +9,9 @@ import Web3 from "web3";
 import { Button, Label, Modal, Table, TextInput } from "flowbite-react";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
-import REACT_APP_SERVER_URL from "../constant.js";
+import REACT_APP_SERVER_URL, { explorerURL, rpcURL } from "../constant.js";
 
-const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
+const web3 = new Web3(rpcURL);
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 function ManageElection() {
@@ -499,7 +499,7 @@ const CandidateModal = ({
             Candidate created successfully, click this{" "}
             <a
               target="_blank"
-              href={`https://sepolia-blockscout.lisk.com/tx/${body.transactionHash}`}
+              href={`${explorerURL}/tx/${body.transactionHash}`}
               class="font-semibold underline hover:no-underline"
             >
               link

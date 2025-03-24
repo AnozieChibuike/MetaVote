@@ -9,9 +9,9 @@ import Web3 from "web3";
 import { Button, Label, Modal, Table } from "flowbite-react";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
-import REACT_APP_SERVER_URL from "../constant.js";
+import REACT_APP_SERVER_URL, { rpcURL } from "../constant.js";
 
-const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
+const web3 = new Web3(rpcURL);
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 function ResultsPage() {

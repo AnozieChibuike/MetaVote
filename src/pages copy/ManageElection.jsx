@@ -7,8 +7,9 @@ import WalletButton from "../components/WalletButton";
 import { contractAddress, contractABI } from "../contract.js";
 import Web3 from "web3";
 import { Button, Label, Modal, Table, TextInput } from "flowbite-react";
+import { rpcURL } from "../constant.js";
 
-const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
+const web3 = new Web3(rpcURL);
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 function ManageElection() {

@@ -10,13 +10,14 @@ import Loader from "../components/loader.jsx";
 import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
+import { rpcURL } from "../constant.js";
 
 const WhitelistPage = () => {
   const { isLoading, error, data, getData } = useVisitorData(
     { extendedResult: true },
     { immediate: true }
   );
-  const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
+  const web3 = new Web3(rpcURL);
   const contract = new web3.eth.Contract(contractABI, contractAddress, {
     handleRevert: true,
   });

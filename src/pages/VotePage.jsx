@@ -7,7 +7,7 @@ import { useNavigate } from "react-router-dom";
 import { Button, Table } from "flowbite-react";
 import Loader from "../components/loader.jsx";
 import "react-toastify/dist/ReactToastify.css";
-import REACT_APP_SERVER_URL from "../constant.js";
+import REACT_APP_SERVER_URL, { rpcURL } from "../constant.js";
 import RedAlertBox from "../components/RedAlertBox.jsx";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 
@@ -92,7 +92,7 @@ const VotePage = () => {
   };
 
   // const contractAddress = "0x1e78ff9407dd881f9ab17320Afc15A49d626ae00";
-  const web3 = new Web3("https://rpc.sepolia-api.lisk.com");
+  const web3 = new Web3(rpcURL);
   const contract = new web3.eth.Contract(contractABI, contractAddress, {
     handleRevert: true
   });

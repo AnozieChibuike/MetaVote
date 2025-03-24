@@ -11,7 +11,7 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
-import REACT_APP_SERVER_URL from "../constant.js";
+import REACT_APP_SERVER_URL, { explorerURL } from "../constant.js";
 // import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 
 const WhitelistPage = () => {
@@ -131,7 +131,7 @@ const WhitelistPage = () => {
             whitelisted, click this{" "}
             <a
               target="_blank"
-              href={`https://rpc.sepolia-api.lisk.com/tx/${result.transactionHash}`}
+              href={`${explorerURL}/tx/${result.transactionHash}`}
               class="font-semibold underline hover:no-underline"
             >
               link
