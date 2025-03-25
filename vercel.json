@@ -2,10 +2,10 @@
   
     "rewrites": [
       {
-        "src": "/favicon\\.png",
+        "source": "/favicon\\.png",
         "destination": "/favicon.png"
       },
-      { "src": "/(.*)", "destination": "/index.html" }
+      { "source": "/(.*)", "destination": "/index.html" }
     ]
   }
   
