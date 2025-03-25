@@ -100,7 +100,7 @@ def magic_link(verification_link):
                         <td align="center" style="color: #777; font-size: 12px;">
                             <p><strong>⚠ Important:</strong></p>
                             <p>✔ If you don't see the email, check your Spam or Junk folder.</p>
-                            <p>✔ Make sure the link is from <strong>metavote.0xagbero.pw</strong> before clicking.</p>
+                            <p>✔ Make sure the link is from <strong>{front_url}</strong> before clicking.</p>
                         </td>
                     </tr>
 
