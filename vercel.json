@@ -1,3 +1,18 @@
 {
-  "cleanUrls": true
-}
+    "rewrites": [
+      {
+        "source": "/favicon.png",
+        "destination": "/favicon.png"
+      },
+      { "source": "/", "destination": "/index.html" },
+      { "source": "/admin", "destination": "/index.html" },
+      { "source": "/manage", "destination": "/index.html" },
+      { "source": "/whitelist", "destination": "/index.html" },
+      { "source": "/whitelisted-voters", "destination": "/index.html" },
+      { "source": "/vote", "destination": "/index.html" },
+      { "source": "/results", "destination": "/index.html" },
+      { "source": "/admin-signin", "destination": "/index.html" },
+      { "source": "/voter-signin", "destination": "/index.html" }
+    ]
+  }
+  
