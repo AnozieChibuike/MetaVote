@@ -22,7 +22,7 @@ const Verify = () => {
       .then((data) => {
         if (data.email) {
           // Store email in session
-          sessionStorage.setItem("email", data.email);
+          localStorage.setItem("email", data.email);
           setMessage("Verification successful! Redirecting...");
           if (!is_admin) setTimeout(() => navigate("/voter-dashboard"), 2000);
           else setTimeout(() => navigate("/admin"), 2000);

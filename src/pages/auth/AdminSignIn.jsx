@@ -10,7 +10,7 @@ function AdminSignIn () {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const storedEmail = sessionStorage.getItem("email");
+    const storedEmail = localStorage.getItem("email");
     if (storedEmail) navigate("/admin"); // Redirect if already signed in
   }, [navigate]);
 
