@@ -87,8 +87,9 @@ const Home = () => {
       {loading && <Loader />}
 
       {/* Hero Section */}
-      <div className="bg-black text-white min-h-screen flex flex-col sm:flex-row items-center justify-center px-6 sm:px-12">
-        <div className="sm:w-1/2 text-center sm:text-left space-y-6">
+      <div className="bg-black text-white min-h-screen  flex flex-col sm:flex-row items-center justify-center px-6 sm:px-12">
+        {/* <div className="bg-white py-20 md:hidden lg:hidden"></div> */}
+        <div className="sm:w-1/2 text-center h-screen md:h-auto lg:h-auto flex md:block lg:block flex-col sm:text-left justify-center space-y-6">
           <a className="text-3xl cursor-pointer sm:text-5xl text-blue-400 font-bold" href="/">
             Meta<span className="text-red-400">Vote</span>
           </a>
@@ -139,16 +140,16 @@ const Home = () => {
       <div ref={statsRef} className="bg-black lg:p-36 p-10">
         <div className="bg-black border-white lg:px-36 px-9 py-7 flex flex-row justify-between rounded-2xl border">
           <div className="flex flex-col">
-            <h2 className="text-center text-4xl font-extrabold">{stats.activeUsers}+</h2>
-            <p className="text-gray-400 text-xs text-center">Active Users</p>
+            <h2 className="text-center text-xl md:text-4xl font-extrabold ">{stats.activeUsers}+</h2>
+            <p className="text-gray-400 text-[0.5rem] md:text-xs text-center">Active Users</p>
           </div>
           <div className="flex flex-col">
-            <h2 className="text-center text-4xl font-extrabold">{stats.onChainTx}+</h2>
-            <p className="text-gray-400 text-xs text-center">On-Chain TX</p>
+            <h2 className="text-center text-xl md:text-4xl font-extrabold ">{stats.onChainTx}+</h2>
+            <p className="text-gray-400 text-[0.5rem] md:text-xs text-center">On-Chain TX</p>
           </div>
           <div className="flex flex-col">
-            <h2 className="text-center text-4xl font-extrabold">{stats.electionsHeld}</h2>
-            <p className="text-gray-400 text-xs text-center">Elections Held</p>
+            <h2 className="text-center text-xl md:text-4xl font-extrabold ">{stats.electionsHeld}</h2>
+            <p className="text-gray-400 text-[0.5rem] md:text-xs text-center">Elections Held</p>
           </div>
         </div>
       </div>
