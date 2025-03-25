@@ -1,5 +1,10 @@
 {
+  
     "rewrites": [
+      {
+        "source": "/favicon.jpg",
+        "destination": "/favicon.jpg"
+      },
       { "source": "/(.*)", "destination": "/index.html" }
     ]
   }
