@@ -3,7 +3,7 @@
     "rewrites": [
       {
         "source": "/favicon.jpg",
-        "destination": "/favicon.jpg"
+        "destination": "/public/favicon.jpg"
       },
       { "source": "/(.*)", "destination": "/index.html" }
     ]
