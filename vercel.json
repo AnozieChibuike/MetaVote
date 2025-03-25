@@ -2,8 +2,8 @@
   
     "rewrites": [
       {
-        "source": "/favicon.jpg",
-        "destination": "/public/favicon.jpg"
+        "source": "/favicon.png",
+        "destination": "/favicon.png"
       },
       { "source": "/(.*)", "destination": "/index.html" }
     ]
