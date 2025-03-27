@@ -161,7 +161,7 @@ const Home = () => {
   </p>
   <div className="flex flex-col sm:flex-row justify-center gap-6">
     
-    <Button color="blue" onClick={() => navigate("/voter-signin")}>Sign in as a Voter</Button> 
+    <Button color="blue" disabled={true} onClick={() => navigate("/voter-signin")}>Sign in as a Voter</Button> 
     <Button color="blue" onClick={() => navigate("/admin-signin")}>Sign in as an Admin</Button>
   </div>
 
