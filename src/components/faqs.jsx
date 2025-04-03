@@ -121,7 +121,7 @@ const FaqSection = () => {
       {
         question: "Have any more questions?",
         answer:
-          <p>Reach out to us at <a href='mailto:dev@0xagbero.pw' className="text-blue-500">dev@0xagbero.ppw</a></p>,
+          <p>Reach out to us at <a href='mailto:dev@0xagbero.pw' className="text-blue-500">dev@0xagbero.pw</a></p>,
       }
     ];
   
