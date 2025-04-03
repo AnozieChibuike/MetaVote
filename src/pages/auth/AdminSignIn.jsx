@@ -5,6 +5,9 @@ import { useNavigate } from "react-router-dom";
 import { Button, TextInput } from "flowbite-react";
 
 function AdminSignIn () {
+   
+      window.scrollTo(0, 0);
+    
     const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -34,7 +37,9 @@ function AdminSignIn () {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white text-center px-6">
-        <a href="/" className="text-xl cursor-pointer text-blue-600 fixed top-5 left-5">Meta<span className="text-red-600">Vote</span></a>
+      <a href='/' className="text-xl font-bold text-blue-600 mb-4">
+        Meta<span className="text-red-400">Vote</span>
+      </a>
       <h2 className="text-3xl font-bold mb-4">Admin Sign In</h2>
       <p className="text-gray-400 mb-6">Enter your email to receive a secure sign-in link.</p>
       <TextInput

@@ -16,6 +16,9 @@ const VoterSignin = () => {
 }
 
   useEffect(() => {
+    
+        window.scrollTo(0, 0);
+      
     const storedEmail = localStorage.getItem("email");
     if (storedEmail) navigate("/voter-dashboard"); // Redirect if already signed in
   }, [navigate]);
@@ -41,7 +44,9 @@ const VoterSignin = () => {
 
   return (
     <div className="flex flex-col items-center justify-center min-h-screen bg-black text-white text-center px-6">
-        <a href="/" className="text-xl text-blue-600 fixed cursor-pointer top-5 left-5">Meta<span className="text-red-600">Vote</span></a>
+      <a href='/' className="text-xl font-bold text-blue-600 mb-4">
+        Meta<span className="text-red-400">Vote</span>
+      </a>
       <h2 className="text-3xl font-bold mb-4">Voter Sign In</h2>
       <p className="text-gray-400 mb-6">Enter your email to receive a secure sign-in link.</p>
       <TextInput
