@@ -117,6 +117,11 @@ const FaqSection = () => {
         question: "Can an election be canceled or modified after creation?",
         answer:
           "Once an election is deployed on the blockchain, it cannot be canceled or modified. This ensures integrity and prevents any form of manipulation.",
+      },
+      {
+        question: "Have any more questions?",
+        answer:
+          <p>Reach out to us at <a href='mailto:dev@0xagbero.pw' className="text-blue-500">dev@0xagbero.ppw</a></p>,
       }
     ];
   

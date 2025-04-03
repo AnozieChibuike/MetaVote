@@ -16,6 +16,8 @@ module.exports = {
   devServer: {
     static: "./dist",
     hot: true,
+    liveReload: false,
+    open: true,
     port: 3000, // Port for your development server
   },
   module: {
