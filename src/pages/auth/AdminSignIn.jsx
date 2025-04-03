@@ -3,11 +3,9 @@ import React from "react";
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button, TextInput } from "flowbite-react";
+import REACT_APP_SERVER_URL from "../../constant";
 
 function AdminSignIn () {
-   
-      window.scrollTo(0, 0);
-    
     const [email, setEmail] = useState("");
   const [message, setMessage] = useState("");
   const navigate = useNavigate();
@@ -27,11 +25,16 @@ function AdminSignIn () {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, is_admin: true }),
       });
-
+      if (res.status !== 200) {
+        const errorData = await res.json();
+        console.log(errorData)
+        throw new Error(errorData.error || "Failed to send email.");
+      }
       const data = await res.json();
       setMessage(data.message || "Check your email for the link.");
     } catch (error) {
-      setMessage("Failed to send email. Try again.");
+      console.log(error)
+      setMessage(`Failed to send email. Try again: ${error.message}`);
     }
   };
 

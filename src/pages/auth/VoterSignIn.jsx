@@ -16,9 +16,7 @@ const VoterSignin = () => {
 }
 
   useEffect(() => {
-    
-        window.scrollTo(0, 0);
-      
+ 
     const storedEmail = localStorage.getItem("email");
     if (storedEmail) navigate("/voter-dashboard"); // Redirect if already signed in
   }, [navigate]);
@@ -34,11 +32,14 @@ const VoterSignin = () => {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email, admin: false }),
       });
-
+      if (res.status !== 200) {
+        const errorData = await res.json();
+        throw new Error(errorData.message || "Failed to send email.");
+      }
       const data = await res.json();
       setMessage(data.message || "Check your email for the link.");
     } catch (error) {
-      setMessage("Failed to send email. Try again.");
+      setMessage(`Failed to send email. Try again: ${error.message}`);
     }
   };
 
