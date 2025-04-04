@@ -14,6 +14,8 @@ front_url = os.getenv('front_url')
 
 mailer_bp = Blueprint("mailer", __name__)
 
+print(app.config)
+
 @mailer_bp.route("/send-verification", methods=["POST", "OPTIONS"])
 def send_verification():
     if request.method == 'OPTIONS':
