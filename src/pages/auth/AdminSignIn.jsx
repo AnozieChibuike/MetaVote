@@ -44,7 +44,7 @@ function AdminSignIn () {
         Meta<span className="text-red-400">Vote</span>
       </a>
       <h2 className="text-3xl font-bold mb-4">Sign In</h2>
-      <p className="text-gray-400 mb-6">Enter your email to receive an OTP</p>
+      <p className="text-gray-400 mb-6">Enter your email to receive a sign in link</p>
       <div className="relative">
       <TextInput
         type="email"
@@ -52,16 +52,8 @@ function AdminSignIn () {
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         className="w-80 mb-4"
-      />
-      <a className="text-blue-500 absolute top-2 right-2">get code</a>
+      />      
       </div>
-      <TextInput
-        type="number"
-        placeholder="otp"
-        value={email}
-        onChange={(e) => setEmail(e.target.value)}
-        className="w-80 mb-4"
-      />
       <Button color="blue" onClick={sendVerificationLink}>Send Link</Button>
       {message && <p className="mt-4 text-gray-300">{message}</p>}
     </div>
