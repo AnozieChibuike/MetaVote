@@ -76,19 +76,16 @@ def magic_link(verification_link):
                     <!-- Message -->
                     <tr>
                         <td align="center" style="color: #333;">
-                            <p>Click the button below to verify your email and sign in:</p>
-                            <a href="{verification_link}" target="_blank" 
-                               style="display: inline-block; background: #007bff; color: #fff; padding: 12px 20px; 
-                               text-decoration: none; font-size: 16px; border-radius: 5px;">
-                                Verify Email
-                            </a>
+                            <p>Copy and paste the below link in your browser to verify your email and sign in:</p>
+                            <p>{verification_link}</p>
+                            <p style="color: red;">Due to saving your browsing session you cannot click this link, copy it instead</p>
                         </td>
                     </tr>
 
                     <!-- Copy Link Manually -->
                     <tr>
                         <td align="center" style="color: #555; font-size: 14px;">
-                            <p>If the button doesn't work, copy and paste the link into your main browser:</p>
+                            <p>If the above doesn't work, copy and paste the link into your main browser:</p>
                             <p style="background: #f8f8f8; padding: 10px; border-radius: 5px; word-break: break-all;">
                                 <a href="{verification_link}" target="_blank" style="color: #007bff; text-decoration: none;">
                                     {verification_link}
