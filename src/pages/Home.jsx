@@ -15,9 +15,9 @@ const Home = () => {
   const FaqRef = useRef(null);
 
   const finalStats = {
-    activeUsers: 1500,
-    onChainTx: 2500,
-    electionsHeld: 3,
+    activeUsers: 5000,
+    onChainTx: 10000,
+    electionsHeld: 8,
   };
   const [hasAnimated, setHasAnimated] = useState(false); // Prevent re-animation
   const statsRef = useRef(null);
@@ -157,12 +157,10 @@ const Home = () => {
 <div ref={signUpRef} className="bg-black text-white py-12 px-6 sm:px-12 text-center">
   <h2 className="text-3xl font-bold mb-6">Join MetaVote</h2>
   <p className="text-gray-300 mb-8">
-    Sign up as a voter or as an election administrator to manage elections seamlessly.
+    From Managing elections participated in to creating elections, sign in to see what MetaVote offers
   </p>
   <div className="flex flex-col sm:flex-row justify-center gap-6">
-    
-    <Button color="blue" disabled={true} onClick={() => navigate("/voter-signin")}>Sign in as a Voter</Button> 
-    <Button color="blue" onClick={() => navigate("/admin-signin")}>Sign in as an Admin</Button>
+    <Button color="blue" onClick={() => navigate("/signin")}>Sign in</Button>
   </div>
 
   {/* Testimonials Section */}

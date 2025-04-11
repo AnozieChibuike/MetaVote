@@ -37,7 +37,7 @@ const App = () => {
           <Route path="/whitelisted-voters" element={<WhiteListed />} />
           <Route path="/vote" element={<VotePage />} />
           <Route path="/results" element={<ResultsPage />} />
-          <Route path="/admin-signin" element={<AdminSignin />} />
+          <Route path="/signin" element={<AdminSignin />} />
           <Route path="/voter-signin" element={<VoterSignin />} />
           <Route path="/voter-dashboard" element={<VoterDashboard />} />
           <Route path="/verify" element={<Verify />} />

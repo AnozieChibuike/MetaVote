@@ -43,11 +43,21 @@ function AdminSignIn () {
       <a href='/' className="text-xl font-bold text-blue-600 mb-4">
         Meta<span className="text-red-400">Vote</span>
       </a>
-      <h2 className="text-3xl font-bold mb-4">Admin Sign In</h2>
-      <p className="text-gray-400 mb-6">Enter your email to receive a secure sign-in link.</p>
+      <h2 className="text-3xl font-bold mb-4">Sign In</h2>
+      <p className="text-gray-400 mb-6">Enter your email to receive an OTP</p>
+      <div className="relative">
       <TextInput
         type="email"
         placeholder="Enter your email"
+        value={email}
+        onChange={(e) => setEmail(e.target.value)}
+        className="w-80 mb-4"
+      />
+      <a className="text-blue-500 absolute top-2 right-2">get code</a>
+      </div>
+      <TextInput
+        type="number"
+        placeholder="otp"
         value={email}
         onChange={(e) => setEmail(e.target.value)}
         className="w-80 mb-4"
