@@ -66,6 +66,7 @@ function AdminSignIn () {
   };
 
   const verifyOtp = async () => {
+    setLoading(true)
     const code = otp.join('');
     if (code.length !== 6) return setMessage('Enter full OTP');
 
@@ -84,6 +85,8 @@ function AdminSignIn () {
       }
     } catch (err) {
       setMessage('Verification failed');
+    } finally {
+      setLoading(false)
     }
   };
 
