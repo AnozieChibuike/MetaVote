@@ -4,6 +4,8 @@ from app import mail, app
 from lib.tokens import generate_token, decode_token
 import os
 import re
+import random
+import time
 
 def is_valid_email(email):
     pattern = r"^[a-zA-Z0-9_.+-]+@[a-zA-Z0-9-]+\.[a-zA-Z0-9-.]+$"
@@ -14,7 +16,6 @@ front_url = os.getenv('front_url')
 
 mailer_bp = Blueprint("mailer", __name__)
 
-print(app.config)
 
 @mailer_bp.route("/send-verification", methods=["POST", "OPTIONS"])
 def send_verification():
@@ -41,7 +42,7 @@ def send_verification():
     except Exception as e:
         return jsonify({"error": f"Failed to send email: {str(e)}"}), 500
 
-@app.route("/verify", methods=["GET"])
+@app.route("/verify", methods=["GET"]) # TODO: Implement OTP instead
 def verify():
     token = request.args.get("token")
     email = decode_token(token)
@@ -50,6 +51,113 @@ def verify():
         return jsonify({"error": "Invalid or expired verification link"}), 400
 
     return jsonify({"email": email, "message": "Verification successful"})
+
+# In-memory store (use a DB in production)
+otp_store = {}
+
+def generate_otp():
+    return ''.join([str(random.randint(0, 9)) for _ in range(6)])
+
+@app.route('/request-otp', methods=['POST'])
+def request_otp():
+    data = request.get_json()
+    email = data.get('email')
+
+    if not email:
+        return jsonify({"error": "Email is required"}), 400
+
+    otp = generate_otp()
+    otp_store[email] = {"otp": otp, "timestamp": time.time()}
+    
+    try:
+        msg = Message("Voter Verification Link", sender=app.config["MAIL_USERNAME"], recipients=[email])
+        msg.html = otp_mail(otp)
+        msg.sender = ("MetaVote", "noreply@metavote.live")
+        mail.send(msg)
+        return jsonify({"message": "Verification link sent"})
+    except Exception as e:
+        return jsonify({"error": f"Failed to send email: {str(e)}"}), 500
+    
+
+@app.route('/verify-otp', methods=['POST'])
+def verify_otp():
+    data = request.get_json()
+    email = data.get('email')
+    entered_otp = data.get('otp')
+
+    record = otp_store.get(email)
+
+    if not record:
+        return jsonify({"error": "No OTP requested for this email"}), 400
+
+    if time.time() - record['timestamp'] > 300:
+        return jsonify({"error": "OTP expired"}), 400
+
+    if record['otp'] != entered_otp:
+        return jsonify({"error": "Invalid OTP"}), 400
+
+    return jsonify({"message": "OTP verified successfully"})
+
+
+def otp_mail(otp):
+    return f"""<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Your MetaVote OTP</title>
+</head>
+<body style="font-family: Arial, sans-serif; background-color: #f4f4f4; margin: 0; padding: 0; text-align: center;">
+
+    <table width="100%" border="0" cellspacing="0" cellpadding="20">
+        <tr>
+            <td align="center">
+                <table width="500px" style="background: #ffffff; padding: 20px; border-radius: 10px; box-shadow: 0 0 10px rgba(0,0,0,0.1);">
+                    
+                    <!-- Logo -->
+                    <tr>
+                        <td align="center">
+                            <h1 style="margin: 0;">
+                                <span style="color: #007bff;">Meta</span><span style="color: #dc3545;">Vote</span>
+                            </h1>
+                        </td>
+                    </tr>
+
+                    <!-- Message -->
+                    <tr>
+                        <td align="center" style="color: #333;">
+                            <p style="font-size: 18px;">Your One-Time Password (OTP) is:</p>
+                            <p style="font-size: 28px; font-weight: bold; letter-spacing: 4px; margin: 20px 0; color: #007bff;">
+                                {otp}
+                            </p>
+                            <p style="color: red;">Do not share this code with anyone.</p>
+                        </td>
+                    </tr>
+
+                    <!-- Usage Note -->
+                    <tr>
+                        <td align="center" style="color: #555; font-size: 14px;">
+                            <p>This OTP is valid for <strong>5 minutes</strong>. Please enter it in the MetaVote verification screen to continue.</p>
+                        </td>
+                    </tr>
+
+                    <!-- Footer -->
+                    <tr>
+                        <td align="center" style="font-size: 12px; color: #aaa;">
+                            <p>If you did not request this code, please ignore this email.</p>
+                            <p>&copy; 2025 MetaVote. All rights reserved.</p>
+                        </td>
+                    </tr>
+
+                </table>
+            </td>
+        </tr>
+    </table>
+
+</body>
+</html>
+"""
+
+
 
 def magic_link(verification_link):
     return f"""<!DOCTYPE html>
