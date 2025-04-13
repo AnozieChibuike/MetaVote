@@ -1,0 +1,11 @@
+gunicorn
+flask
+flask_migrate
+flask_sqlalchemy
+flasksqlalchemybasemodel
+flask_cors
+flask_mail
+gunicorn
+pymysql
+python_dotenv
+web3

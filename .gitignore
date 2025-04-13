@@ -26,4 +26,3 @@ dist-ssr
 *.db
 *.env
 *bulk.js
-*.txt
