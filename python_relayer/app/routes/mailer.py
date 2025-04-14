@@ -42,7 +42,7 @@ def send_verification():
     except Exception as e:
         return jsonify({"error": f"Failed to send email: {str(e)}"}), 500
 
-@app.route("/verify", methods=["GET"]) # TODO: Implement OTP instead
+@app.route("/verify", methods=["GET"]) 
 def verify():
     token = request.args.get("token")
     email = decode_token(token)

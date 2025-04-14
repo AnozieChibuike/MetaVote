@@ -126,8 +126,10 @@ const CreateElectionPage = () => {
       setLoading(false);
     }
   };
+  // TODO: Implement a function to check elections from backend, compare to blockchain data and use that data to show admins
   return (
     <>
+    
       {loading && <Loader />}
       {!!alert && <GreenAlertBox alert={alert} setAlert={setAlert} />}
       {!!redAlert && <RedAlertBox alert={redAlert} setAlert={setRedAlert} />}
