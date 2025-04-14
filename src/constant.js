@@ -1,7 +1,9 @@
 // const chainId = "0x106A"; // get from server (Relayer network)
 // const chainName = "Lisk Sepolia";
-export const rpcURL = "https://rpc.api.lisk.com/";
-export const explorerURL = "https://blockscout.lisk.com";
+export const rpcURL = "https://rpc.sepolia-api.lisk.com/";
+export const explorerURL = "https://sepolia-blockscout.lisk.com";
+// export const rpcURL = "https://rpc.api.lisk.com/";
+// export const explorerURL = "https://blockscout.lisk.com";
 
 // module.exports = {
 //     chainId,
