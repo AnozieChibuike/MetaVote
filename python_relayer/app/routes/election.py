@@ -310,7 +310,7 @@ def vote():
 def create_election():
     data = request.get_json()
     election_name = data.get("electionName")
-    election_logo_url = data.get("electionLogoUrl")
+    election_logo_url = data.get("electionLogoUrl", "https://bafkreihtysunhalraprcoh2jwoelc7qkjtdpf5crkomvde2lcnalekiili.ipfs.w3s.link")
     start = data.get("start")
     end = data.get("end")
 
@@ -359,7 +359,7 @@ def create_candidate():
     data = request.get_json()
     election_id = data.get("electionId")
     name = data.get("name")
-    image_url = data.get("imageUrl")
+    image_url = data.get("imageUrl", "https://bafkreihtysunhalraprcoh2jwoelc7qkjtdpf5crkomvde2lcnalekiili.ipfs.w3s.link")
     position = data.get("position")
 
     print(data)  # Debugging
