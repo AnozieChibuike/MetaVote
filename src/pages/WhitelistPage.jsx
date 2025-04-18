@@ -11,14 +11,14 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
-import REACT_APP_SERVER_URL, { explorerURL } from "../constant.js";
+import REACT_APP_SERVER_URL, { explorerURL, rpcURL } from "../constant.js";
 import checkSession from "../helper/session.js";
 // import { useVisitorData } from "@fingerprintjs/fingerprintjs-pro-react";
 
 const WhitelistPage = () => {
   checkSession()
   const navigate = useNavigate();
-  const web3 = new Web3(window.ethereum);
+  const web3 = new Web3(rpcURL);
   const contract = new web3.eth.Contract(contractABI, contractAddress, {
     handleRevert: true
   });
@@ -45,10 +45,7 @@ const WhitelistPage = () => {
 
   // Extract the 'id' parameter
   const id = urlParams.get("id");
-  const getAdmin = () => {
-    const admin = sessionStorage.getItem("code") || null;
-    return admin;
-  };
+ 
 
   useEffect(() => {
     setAlert("");
@@ -64,12 +61,7 @@ const WhitelistPage = () => {
       navigate("/");
       return;
     }
-    const admin = getAdmin();
-    if (!admin) {
-      setRedAlert("Session expired relogin");
-      navigate("/");
-      return;
-    }
+    
   }, []);
   useEffect(() => {
     if (id) {
@@ -106,7 +98,7 @@ const WhitelistPage = () => {
     setLoading(true);
     try {
       const gass = await contract.methods
-        .whitelistUser(Number(id), registrationNumber, 30000)
+        .whitelistUser(Number(id), registrationNumber, 0)
         .estimateGas({ from: "0x4Bb246e8FC52CBFf7a0FD5a298367E4718773395" });
       console.log(gass);
       const response = await fetch(`${REACT_APP_SERVER_URL}/whitelist`, {

@@ -11,24 +11,20 @@ import { ToastContainer, toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
-import REACT_APP_SERVER_URL from "../constant.js";
+import REACT_APP_SERVER_URL, { rpcURL } from "../constant.js";
 import checkSession from "../helper/session.js";
 
 const WhiteListed = () => {
+  const navigate = useNavigate();
   checkSession()
     const [data, setData] = useState([])
     const [election, setElection] = useState("");
-    const web3 = new Web3(window.ethereum);
-      const contract = new web3.eth.Contract(contractABI, contractAddress, {
-        handleRevert: true
-      });
+    const web3 = new Web3(rpcURL);
+    const contract = new web3.eth.Contract(contractABI, contractAddress);
+    
       const urlParams = new URLSearchParams(window.location.search);
       // Extract the 'id' parameter
       const id = urlParams.get("id");
-      const getAdmin = () => {
-        const admin = sessionStorage.getItem("code") || null;
-        return admin;
-      };
       const {
           account,
           loading,
@@ -44,6 +40,7 @@ const WhiteListed = () => {
                 try {
                   const response = await fetch(`${REACT_APP_SERVER_URL}/whitelisted-voters?election_id=${id}`);
                   const body = await response.json();
+                  console.log(body)
                 setData(body?.data)
                 } catch (error) {
                   console.log("e", error);
@@ -64,12 +61,7 @@ const WhiteListed = () => {
             navigate("/");
             return;
           }
-          const admin = getAdmin();
-          if (!admin) {
-            setRedAlert("Session expired relogin");
-            navigate("/");
-            return;
-          }
+
         }, []);
 
          useEffect(() => {
@@ -108,7 +100,7 @@ const WhiteListed = () => {
             </a>
             </div>
             <div className="flex justify-center items-center">
-            <img src={election?.logoUrl} alt="LSLs" className="w-32" />
+            <img src={election?.logoUrl} alt="Logo" className="w-32" />
             </div>
             <RegistrationTable data={data} />
         </div>
@@ -122,7 +114,7 @@ const RegistrationTable = ({ data }) => {
   
     // Filter data based on search term
     const filteredData = data.filter(item =>
-      item.registrationNumber.toLowerCase().includes(searchTerm.toLowerCase())
+      item.regNo.toLowerCase().includes(searchTerm.toLowerCase())
     );
   
     return (
@@ -150,7 +142,7 @@ const RegistrationTable = ({ data }) => {
             {filteredData.length > 0 ? (
               filteredData.map((item, index) => (
                 <tr key={index} className="text-center">
-                  <td className="border p-2">{item.registrationNumber}</td>
+                  <td className="border p-2">{item.regNo}</td>
                   <td className="border p-2">{item.pin}</td>
                 </tr>
               ))

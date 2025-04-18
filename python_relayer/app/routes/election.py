@@ -5,7 +5,7 @@ from lib.contract import contract as voting_contract
 from lib.contract import contract_address, web3, URL
 from lib.crypto import generate_pin
 import json
-
+from app.models.election import Election 
 from lib.file_handlers import read_voters_file, write_voters_file, read_whitelist_file, write_whitelist_file
 
 elections_bp = Blueprint("elections", __name__)
@@ -93,26 +93,28 @@ def whitelisted_voters():
     election_id = request.args.get("election_id")
     if not election_id:
         abort(400, description='No election id supplied')
-    whitelist_path = f'hidden/{election_id}.json'
-    if not os.path.exists(whitelist_path):
+
+    election = Election.query.filter_by(blockchain_id=int(election_id)).first()
+    if not election:
         return jsonify({
             "success": False,
-            "message": "No whitelisted voters found for this election.",
+            "message": "Election not found.",
             "data": []
         })
+
     try:
-        # Read the voters file
-        with open(whitelist_path, "r", encoding="utf-8") as f:
-            whitelisted_voters = json.load(f)
+        all_voters = json.loads(election._voters) if election._voters else []
+
+        whitelisted = [v for v in all_voters if v.get("is_whitelisted", False)]
 
         return jsonify({
             "success": True,
             "message": "Whitelisted voters retrieved successfully.",
-            "data": whitelisted_voters
+            "data": whitelisted
         })
 
     except json.JSONDecodeError:
-        abort(500, description="Error reading the voters file. It may be corrupted.")
+        abort(500, description="Error decoding voters data from the database.")
     except Exception as e:
         abort(500, description=f"An error occurred: {str(e)}")
 
@@ -127,32 +129,18 @@ def upload_file():
 
     file = request.files["file"]
     election_id = request.form["election_id"]  # Get election ID from form data
-    voters_file_path = f"app/static/voters/{election_id}.json"  # Use election ID in file path
     if file.filename == "":
         abort(400, description="No selected file")
 
     file_path = os.path.join(UPLOAD_FOLDER, secure_filename(file.filename))
     file.save(file_path)
 
-    try:
-        # Read and parse the uploaded file
-        with open(file_path, "r", encoding="utf-8") as f:
-            new_reg_numbers = [line.strip() for line in f.readlines() if line.strip()]
+    added_count = save_uploaded_voters_to_db(election_id, file_path)
 
-        existing_reg_numbers = read_voters_file(voters_file_path)
+    os.remove(file_path)
 
-        # Combine new and existing registration numbers
-        combined_reg_numbers = list(set(existing_reg_numbers + new_reg_numbers))
-        write_voters_file(voters_file_path,combined_reg_numbers)
+    return jsonify({"message": f"{added_count} registration numbers added."})
 
-        # Delete the uploaded file
-        os.remove(file_path)
-
-        return jsonify({"message": f"{len(new_reg_numbers)} registration numbers added."})
-
-    except NameError as e:
-        print(e)
-        abort(500, description=f"Error processing file: {str(e)}")
 
 @elections_bp.route("/whitelist", methods=["POST"])
 def whitelist_voter():
@@ -161,96 +149,118 @@ def whitelist_voter():
         election_id = data.get("electionId")
         registration_number = data.get("registrationNumber")
         gas = data.get("gas")
+        print(data)
 
-        if not registration_number:
-            abort(400, description="Registration number is required")
+        if not election_id or not registration_number:
+            abort(400, description="Election ID and registration number are required")
 
-        registration_numbers = read_voters_file(f"app/static/voters/{election_id}.json")
+        # Fetch election from DB
+        election = Election.filter_one(blockchain_id=election_id)
         
+        if not election:
+            abort(404)
+        
+        voters = json.loads(election._voters) if election._voters else []
+        print(voters)
+        # Check if voter exists
+        voter = next((v for v in voters if v["regNo"] == registration_number), None)
 
-        if registration_number not in registration_numbers:
-            abort(404, description="Registration number not found")
+        if not voter:
+            abort(404, description="Registration number not found in this election")
 
-        # Step 2: Read the current whitelist file
-        whitelisted_voters = read_whitelist_file(whitelist_file_path)
+        # Check if already whitelisted
+        # if voter.get("is_whitelisted", False):
+        #     return jsonify({
+        #         "message": "Voter already whitelisted",
+        #         "voter": voter
+        #     })
 
-        # Step 3: Check if the voter is already whitelisted
-        voter = next((v for v in whitelisted_voters if v["registrationNumber"] == registration_number), None)
-
-        if voter:
-            return jsonify({
-                "message": "Voter already whitelisted",
-                "voter": voter
-            })
-
-        # Step 4: Build and send the transaction
+        # Step 1: Send blockchain whitelist transaction
         gas_price = web3.eth.gas_price
         account = web3.eth.account.from_key(relayer_private_key)
 
-        tx_data =  voting_contract.functions.whitelistUser(election_id, registration_number, gas).build_transaction({
-            "from": account.address,
-            "gasPrice": gas_price,
-        })["data"]
+        print(account)
 
+        tx_data = voting_contract.functions.whitelistUser(
+            int(election_id), registration_number, 0
+        ).build_transaction({
+            "from": account.address,
+        })["data"]
+        print(tx_data)
         tx = {
             "to": contract_address,
             "data": tx_data,
             "from": account.address,
             "nonce": web3.eth.get_transaction_count(account.address),
-            "gas": web3.eth.estimate_gas({"to": contract_address, "data": tx_data, "from": account.address}),
-            "maxFeePerGas": web3.to_wei(2, "gwei"),  # Adjust as needed
+            "gas": web3.eth.estimate_gas({
+                "to": contract_address,
+                "data": tx_data,
+                "from": account.address
+            }),
+            "maxFeePerGas": web3.to_wei(2, "gwei"),
             "maxPriorityFeePerGas": web3.to_wei(1, "gwei"),
-            "chainId": web3.eth.chain_id,  # Ensure correct chain ID
+            "chainId": web3.eth.chain_id,
         }
 
-        signed_tx = web3.eth.account.sign_transaction(tx, account.key)
-        receipt = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
-        tx_hash = web3.to_hex(receipt)
+        signed_tx = web3.eth.account.sign_transaction(tx, relayer_private_key)
+        tx_hash = web3.to_hex(web3.eth.send_raw_transaction(signed_tx.raw_transaction))
+        print(tx_hash)
 
-        # Step 5: Update the whitelist file
-        new_voter = {
-            "registrationNumber": registration_number,
-            "pin": generate_pin()
-        }
-        whitelisted_voters.append(new_voter)
-        write_whitelist_file(f"hidden/{election_id}.json",whitelisted_voters)
+        # Step 2: Update voter in DB
+        voter["is_whitelisted"] = True
+        voter["pin"] = generate_pin()
+        # Update the list
+        election._voters = json.dumps(voters)
+        election.save()
+        print(election._voters)  # Debugging
 
         return jsonify({
             "success": True,
             "transactionHash": tx_hash,
-            "newVoter": new_voter
+            "newVoter": {
+                "registrationNumber": registration_number,
+                "pin": voter["pin"]
+            }
         })
 
-    except Exception as error:
-        print(error)
-        error_message = str(error)
-        
-        if "execution reverted: You are not authorized to create elections" in error_message:
-            abort(500, description="You are not authorized to create elections")
-
-        abort(500, description=error_message)
+    except Exception as e:
+        print("Error:", e)
+        abort(500, description=f"Internal Server Error: {str(e)}")
 
 @elections_bp.route("/verify-voter", methods=["POST"])
 def verify_voter():
     election_id = request.args.get("election_id")
     if not election_id:
-        abort(400, description='No election id supplied')
+        abort(400, description='No election ID supplied')
+
     data = request.get_json()
     registration_number = str(data.get("registrationNumber"))
     pin = str(data.get("pin"))
 
-    whitelisted_voters = read_whitelist_file(f"hidden/{election_id}.json")
+    if not registration_number or not pin:
+        abort(400, description="Registration number and pin are required")
+
+    # Fetch election from DB
+    election = Election.query.filter_by(blockchain_id=election_id).first()
+    if not election:
+        abort(404, description="Election not found")
+
+    voters = json.loads(election._voters) if election._voters else []
 
     # Find the voter
-    voter = next((v for v in whitelisted_voters if str(v["registrationNumber"]) == registration_number), None)
+    voter = next((v for v in voters if v["regNo"] == registration_number), None)
 
     if not voter:
         return jsonify({"error": "Registration number not found."})
 
-    if str(voter["pin"]) != pin:
+    if not voter.get("is_whitelisted", False):
+        return jsonify({"error": "Voter is not whitelisted."})
+
+    if str(voter.get("pin", "")) != pin:
         return jsonify({"error": "Incorrect pin."})
 
     return jsonify({"success": True})
+
 
 @elections_bp.route("/vote", methods=["POST"])
 def vote():
@@ -260,56 +270,86 @@ def vote():
     candidates_list = data.get("candidatesList")
     registration_number = data.get("registrationNumber")
 
+    if not all([gas, election_id, candidates_list, registration_number]):
+        abort(400, description="Missing required fields")
+
     print(candidates_list)  # Debugging
 
-    whitelisted_voters = read_whitelist_file(f"hidden/{election_id}.json")
-    voter = next((v for v in whitelisted_voters if v["registrationNumber"] == registration_number), None)
+    # Fetch election from DB
+    election = Election.query.filter_by(blockchain_id=election_id).first()
+    if not election:
+        return jsonify({"error": "Election not found"}), 404
 
-    if not voter:
+    voters = json.loads(election._voters) if election._voters else []
+
+    # Find the voter
+    voter_index = next((i for i, v in enumerate(voters) if v["regNo"] == registration_number), None)
+    if voter_index is None:
         return jsonify({"error": "Registration number not found."}), 404
 
-    try:
-        # Get gas price
-        gas_price = web3.eth.gas_price
+    voter = voters[voter_index]
 
-        # Get relayer account
+    if not voter.get("is_whitelisted", False):
+        return jsonify({"error": "Voter is not whitelisted."}), 403
+
+    if voter.get("has_voted", False):
+        return jsonify({"error": "Voter has already voted."}), 403
+
+    try:
+        gas_price = web3.eth.gas_price
         account = web3.eth.account.from_key(relayer_private_key)
+
         tx_data = voting_contract.functions.batchVote(
-                registration_number, election_id, candidates_list, gas
-            ).build_transaction({"from": account.address})["data"]
-        # Build the transaction
-        
+            registration_number, election_id, candidates_list, gas
+        ).build_transaction({
+            "from": account.address
+        })["data"]
+
         tx = {
             "to": contract_address,
             "data": tx_data,
             "from": account.address,
             "nonce": web3.eth.get_transaction_count(account.address),
-            "gas": web3.eth.estimate_gas({"to": contract_address, "data": tx_data, "from": account.address}),
-            "maxFeePerGas": web3.to_wei(2, "gwei"),  # Adjust as needed
+            "gas": web3.eth.estimate_gas({
+                "to": contract_address,
+                "data": tx_data,
+                "from": account.address
+            }),
+            "maxFeePerGas": web3.to_wei(2, "gwei"),
             "maxPriorityFeePerGas": web3.to_wei(1, "gwei"),
-            "chainId": web3.eth.chain_id,  # Ensure correct chain ID
+            "chainId": web3.eth.chain_id,
         }
 
-        # Sign the transaction
         signed_tx = web3.eth.account.sign_transaction(tx, relayer_private_key)
-
-        # Send the transaction
         tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
 
-        return jsonify({"success": True, "transactionHash": web3.to_hex(tx_hash)})
+        # Mark voter as having voted
+        voters[voter_index]["has_voted"] = True
+        election._voters = json.dumps(voters)
+        election.save()
+
+        return jsonify({
+            "success": True,
+            "transactionHash": web3.to_hex(tx_hash)
+        })
 
     except Exception as error:
         print(error)
         error_message = str(error)
         if "execution reverted: You are not authorized to create elections" in error_message:
-            return jsonify({"success": False, "error": "You are not authorized to create elections"}), 500
-        
+            return jsonify({
+                "success": False,
+                "error": "You are not authorized to create elections"
+            }), 500
+
         return jsonify({"success": False, "error": error_message}), 500
+
 
 @elections_bp.route("/create-election", methods=["POST"])
 def create_election():
     data = request.get_json()
     election_name = data.get("electionName")
+    creator = data.get("email")
     election_logo_url = data.get("electionLogoUrl", "https://bafkreihtysunhalraprcoh2jwoelc7qkjtdpf5crkomvde2lcnalekiili.ipfs.w3s.link")
     start = data.get("start")
     end = data.get("end")
@@ -318,10 +358,8 @@ def create_election():
 
     try:
         # Get gas price
-        print(web3)
-        print(web3.eth.get_block("latest"))
         gas_price = web3.eth.gas_price
-        print(gas_price)
+        
 
         # Get relayer account
         account = web3.eth.account.from_key(relayer_private_key)
@@ -345,10 +383,31 @@ def create_election():
         # Sign the transaction
         signed_tx = web3.eth.account.sign_transaction(tx, relayer_private_key)
 
-        print(signed_tx)
+        # Send the transaction
+        tx_hash1 = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
+        new_id = voting_contract.functions.electionCount().call()
+        e = Election(name=election_name,blockchain_id=new_id, election_creator=creator)
+        e.save()
+        tx_data = voting_contract.functions.deposit(
+            new_id
+        ).build_transaction({"from": account.address, "value": 100000000,
+})["data"]
+
+        tx = {
+            "to": contract_address,
+            "data": tx_data,
+            "from": account.address,
+            "nonce": web3.eth.get_transaction_count(account.address),
+            "gas": web3.eth.estimate_gas({"to": contract_address, "data": tx_data, "from": account.address}),
+            "maxFeePerGas": web3.to_wei(2, "gwei"),  # Adjust as needed
+            "maxPriorityFeePerGas": web3.to_wei(1, "gwei"),
+            "chainId": web3.eth.chain_id,  # Ensure correct chain ID
+        }
+        signed_tx = web3.eth.account.sign_transaction(tx, relayer_private_key)
+
         # Send the transaction
         tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
-        return jsonify({"success": True, "transactionHash": web3.to_hex(tx_hash)})
+        return jsonify({"success": True, "transactionHash": web3.to_hex(tx_hash1)})
 
     except NameError as error:
         print(error)
@@ -391,7 +450,7 @@ def create_candidate():
 
         # Send the transaction
         tx_hash = web3.eth.send_raw_transaction(signed_tx.raw_transaction)
-
+        
         return jsonify({"success": True, "transactionHash": web3.to_hex(tx_hash)})
 
     except Exception as error:
@@ -408,3 +467,41 @@ def create_candidate():
 
         return jsonify({"success": False, "error": str(error)}), 500
     
+def save_uploaded_voters_to_db(election_id, file_path):
+    try:
+        with open(file_path, "r", encoding="utf-8") as f:
+            new_reg_numbers = [line.strip() for line in f.readlines() if line.strip()]
+        
+        # Fetch election from DB
+        election = Election.query.filter_by(blockchain_id=election_id).first()
+        if not election:
+            abort(404, description="Election not found")
+        
+        existing_voters = json.loads(election._voters) if election._voters else []
+
+        # Get existing regNo list
+        existing_regNos = set(v["regNo"] for v in existing_voters)
+        
+        # Prepare new voters
+        added = 0
+        for regNo in new_reg_numbers:
+            if regNo not in existing_regNos:
+                voter = {
+                    "regNo": regNo,
+                    "pin": "",
+                    "has_voted": False,
+                    "is_whitelisted": False
+                }
+                existing_voters.append(voter)
+                added += 1
+
+        # Update the election record
+        election._voters = json.dumps(existing_voters)
+        election.voter_count = len(existing_voters)
+        election.save()
+
+        return added
+
+    except Exception as e:
+        print("Error:", e)
+        abort(500, description=f"Error processing file: {str(e)}")

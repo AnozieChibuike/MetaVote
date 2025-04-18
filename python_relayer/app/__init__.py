@@ -8,7 +8,7 @@ from flask_mail import Mail
 
 app = Flask(__name__)
 app.config.from_object(Config)
-CORS(app)
+CORS(app, resources={r"/*": {"origins": "*"}})
 mail = Mail(app)
 
 db.init_app(app)
