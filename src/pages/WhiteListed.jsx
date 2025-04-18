@@ -136,6 +136,8 @@ const RegistrationTable = ({ data }) => {
             <tr className="bg-gray-200">
               <th className="border p-2 text-black">Registration Number</th>
               <th className="border p-2 text-black">PIN</th>
+              <th className="border p-2 text-black">Is Whitelisted</th>
+              <th className="border p-2 text-black">Has Voted</th>
             </tr>
           </thead>
           <tbody>
@@ -144,11 +146,13 @@ const RegistrationTable = ({ data }) => {
                 <tr key={index} className="text-center">
                   <td className="border p-2">{item.regNo}</td>
                   <td className="border p-2">{item.pin}</td>
+                  <td className="border p-2">{item.is_whitelisted == true ? "✅" : ""} </td>
+                  <td className="border p-2">{item.has_voted == true ? "✅" : ""}</td>
                 </tr>
               ))
             ) : (
               <tr>
-                <td colSpan="2" className="border p-2 text-center">No results found</td>
+                <td colSpan="4" className="border p-2 text-center">No results found</td>
               </tr>
             )}
           </tbody>

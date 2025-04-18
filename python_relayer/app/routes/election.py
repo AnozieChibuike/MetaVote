@@ -110,7 +110,7 @@ def whitelisted_voters():
         return jsonify({
             "success": True,
             "message": "Whitelisted voters retrieved successfully.",
-            "data": whitelisted
+            "data": all_voters
         })
 
     except json.JSONDecodeError:

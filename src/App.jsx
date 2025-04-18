@@ -34,7 +34,7 @@ const App = () => {
           <Route path="/admin" element={<CreateElectionPage />} />
           <Route path="/manage" element={<ManageElection />} />
           <Route path="/whitelist" element={<WhitelistPage />} />
-          <Route path="/whitelisted-voters" element={<WhiteListed />} />
+          <Route path="/voters" element={<WhiteListed />} />
           <Route path="/vote" element={<VotePage />} />
           <Route path="/results" element={<ResultsPage />} />
           <Route path="/signin" element={<AdminSignin />} />
