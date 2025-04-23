@@ -13,7 +13,6 @@ import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import checkSession from "../helper/session.js";
 
 const VotePage = () => {
-  checkSession
   const [selectedCandidateInfo, setSelected] = useState(null);
   const [disabled, setDisabled] = useState(false);
   const navigate = useNavigate();
@@ -80,6 +79,7 @@ const VotePage = () => {
       navigate("/");
     }
   }, []);
+
   const checkVoted = async (registrationNumber) => {
     try {
       const voted = await contract.methods
@@ -161,9 +161,9 @@ const VotePage = () => {
     checkVoted(reggie);
   }, [reggie]);
 
-  useEffect(() => {
-    if (selectedCandidateInfo?.name) notifyWithButtons();
-  }, [selectedCandidateInfo]);
+  // useEffect(() => {
+  //   if (selectedCandidateInfo?.name) notifyWithButtons();
+  // }, [selectedCandidateInfo]);
 
   useEffect(() => {
     setInterval(() => updateCountdown(election, "whitelist", "voting"));
@@ -296,6 +296,7 @@ const VotePage = () => {
   useEffect(() => {
     if (election?.id) updateStateBasedOnTimestamps(election?.votingStartTime, election?.votingEndTime)
   }, [election])
+
   const vote = async () => {
     setAlert("");
     setRedAlert("");
@@ -338,8 +339,8 @@ const VotePage = () => {
       {!!alert && <GreenAlertBox alert={alert} setAlert={setAlert} />}
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
-          <a className="text-3xl font-bold text-blue-600 cursor-pointer" href="/">
-            Meta<span className="text-red-400">Vote</span>
+          <a className="text-3xl font-bold text-green-600 cursor-pointer" href="/">
+            AS<span className="text-red-400">ICT</span>
           </a>
         </div>
         {/* <div>
@@ -363,14 +364,14 @@ const VotePage = () => {
             </>
           )}
         </div>
-        <span className="inline">See the live election results </span>
+        {/* <span className="inline">See the live election results </span>
         <a
-          className="italic text-blue-600"
+          className="italic text-green-600"
           target="_blank"
           href={`http://${window.location.host}/results?id=${Number(id)}`}
         >
           here
-        </a>
+        </a> */}
         <h2 className="text-2xl text-center my-3 font-semibold">
           Vote for a Candidate
         </h2>
@@ -418,7 +419,7 @@ const VotePage = () => {
                               selection.position === position &&
                               selection.candidateId === item[0]
                           )
-                            ? "bg-blue-600"
+                            ? "bg-green-600"
                             : "bg-gray-600"
                         } text-white px-4 py-2 rounded`}
                         onClick={() => handleSelectCandidate(position, item[0])}

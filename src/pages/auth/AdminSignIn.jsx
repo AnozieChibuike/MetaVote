@@ -42,7 +42,16 @@ function AdminSignIn () {
   };
 
   const requestOtp = async () => {
-    setMessage('');
+    if (!email) {
+      setMessage('Please enter an email.');
+      return;
+    }
+
+    const allowedEmails = ["admin1@example.com", "admin2@example.com"];
+    if (!allowedEmails.includes(email)) {
+      setMessage('Email is not authorized.');
+      return;
+    }
     setLoading(true)
     try {
       const res = await fetch(`${REACT_APP_SERVER_URL}/request-otp`, {

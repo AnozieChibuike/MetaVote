@@ -135,8 +135,8 @@ const CreateElectionPage = () => {
       {!!redAlert && <RedAlertBox alert={redAlert} setAlert={setRedAlert} />}
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
-          <a className="text-3xl font-bold text-blue-600 cursor-pointer" href="/">
-            Meta<span className="text-red-400">Vote</span>
+          <a className="text-3xl font-bold text-green-600 cursor-pointer" href="/">
+            AS<span className="text-red-400">ICT</span>
           </a>
         </div>
         <h2 className="text-2xl text-center my-3 font-semibold">
@@ -185,7 +185,7 @@ const CreateElectionPage = () => {
           onChange={(e) => setVotingEnd(e.target.value)}
         />
         <button
-          className="bg-blue-700 my-5 p-3 rounded block disabled:bg-gray-500"
+          className="bg-green-700 my-5 p-3 rounded block disabled:bg-gray-500"
           onClick={createElection}
           // disabled={!account}
         >
@@ -207,7 +207,7 @@ const CreateElectionPage = () => {
             >
               <p className="text-white">{items.name}</p>
               <button
-                className="p-2 bg-blue-700 rounded-md"
+                className="p-2 bg-green-700 rounded-md"
                 onClick={() => {
                   // setElect({ ...items });
                   navigate(`/manage?id=${items.id}`);

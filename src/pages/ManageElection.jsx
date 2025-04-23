@@ -259,11 +259,11 @@ function ManageElection() {
       {!!redAlert && <RedAlertBox setAlert={setRedAlert} alert={redAlert} />}
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
-          <a className="text-3xl font-bold text-blue-600 cursor-pointer" href="/">
-            Meta<span className="text-red-400">Vote</span>
+          <a className="text-3xl font-bold text-green-600 cursor-pointer" href="/">
+            AS<span className="text-red-400">ICT</span>
           </a>
         </div>
-        <a href="/admin" className="text-blue-700">
+        <a href="/admin" className="text-green-700">
           Back
         </a>
         <div className="flex justify-center items-center">
@@ -276,7 +276,7 @@ function ManageElection() {
         <p className="mt-3">Total Voters: {Number(items ? items[3] : 0)}</p>
         <p className="mt-3">Election Link: </p>
         <a
-          className="italic text-blue-600"
+          className="italic text-green-600"
           href={`http://${window.location.host}/vote?id=${Number(
             items ? items.id : 0
           )}`}
@@ -285,7 +285,7 @@ function ManageElection() {
         </a>
         <p className="mt-3">Results Link: </p>
         <a
-          className="italic text-blue-600"
+          className="italic text-green-600"
           href={`http://${window.location.host}/results?id=${Number(
             items ? items.id : 0
           )}`}
@@ -294,7 +294,7 @@ function ManageElection() {
         </a>
         <p className="mt-3">Voter's WhiteList Link: </p>
         <a
-          className="italic text-blue-600"
+          className="italic text-green-600"
           href={`http://${window.location.host}/whitelist?id=${Number(
             items ? items.id : 0
           )}`}
@@ -304,7 +304,7 @@ function ManageElection() {
         </a>
         <p className="mt-3">All Voters Information Link: </p>
         <a
-          className="italic text-blue-600"
+          className="italic text-green-600"
           href={`http://${window.location.host}/voters?id=${Number(
             items ? items.id : 0
           )}`}
@@ -324,7 +324,7 @@ function ManageElection() {
                 accept=".txt" // Ensures only .txt files are selectable
                 onChange={handleFileChange}
               />
-              <Button className="bg-blue-600" onClick={handleUpload}>
+              <Button className="bg-green-600" onClick={handleUpload}>
                 Upload
               </Button>
             </> : <>
@@ -345,7 +345,7 @@ function ManageElection() {
               />
               
              
-              <Button className="bg-blue-600" onClick={handleUpload}>
+              <Button className="bg-green-600" onClick={handleUpload}>
                 Update
               </Button>
             </>
@@ -410,7 +410,7 @@ function ManageElection() {
             ))}
 
           <Button
-            className="bg-blue-600 mt-5 self-center"
+            className="bg-green-600 mt-5 self-center"
             onClick={() => {
               setOpenModal(true);
             }}
@@ -567,7 +567,7 @@ const CandidateModal = ({
             />
           </div> */}
           <div className="w-full">
-            <Button className="bg-blue-600" onClick={addCandidate}>
+            <Button className="bg-green-600" onClick={addCandidate}>
               Create Candidate
             </Button>
           </div>
