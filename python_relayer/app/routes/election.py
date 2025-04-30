@@ -388,12 +388,14 @@ def create_election():
         new_id = voting_contract.functions.electionCount().call()
         e = Election(name=election_name,blockchain_id=new_id, election_creator=creator)
         e.save()
+
         tx_data = voting_contract.functions.deposit(
             new_id
         ).build_transaction({"from": account.address, "value": 100000000,
 })["data"]
 
         tx = {
+            "value": 100000000,
             "to": contract_address,
             "data": tx_data,
             "from": account.address,
