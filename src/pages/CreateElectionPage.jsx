@@ -136,7 +136,7 @@ const CreateElectionPage = () => {
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
           <a className="text-3xl font-bold text-green-600 cursor-pointer" href="/">
-            AS<span className="text-red-400">ICT</span>
+          Meta<span className="text-red-400">Vote</span>
           </a>
         </div>
         <h2 className="text-2xl text-center my-3 font-semibold">
