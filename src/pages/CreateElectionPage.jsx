@@ -52,7 +52,8 @@ const CreateElectionPage = () => {
       const elections = await contract.methods
         .getElectionsByCreator(account)
         .call({ from: account });
-      setDepElections(elections);
+        const filteredElections = elections.filter(election => election.id > 15);
+      setDepElections(filteredElections);
       console.log(elections);
     } catch (error) {
       console.log(error);
