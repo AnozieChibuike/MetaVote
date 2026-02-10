@@ -18,7 +18,7 @@ const DedicatedVotePage = () => {
   const [candidates, setCandidates] = useState({}); // { Role: [Candidate, ...] }
   const [roles, setRoles] = useState([]);
   const [currentStep, setCurrentStep] = useState(0); // 0 = Verification, 1...N = Voting Steps, N+1 = Review
-  const [selections, setSelections] = useState({}); // { Role: candidateId }
+  const [selections, setSelections] = useState({}); // { Role: { id: candidateId, type: 'YES'|'NO' } }
   const [electionStatus, setElectionStatus] = useState("LOADING"); // LOADING, NOT_STARTED, RUNNING, PAUSED, ENDED
   const [toast, setToast] = useState(null);
 
@@ -104,8 +104,8 @@ const DedicatedVotePage = () => {
     }
   };
 
-  const handleSelect = (role, candidateId) => {
-    setSelections((prev) => ({ ...prev, [role]: candidateId }));
+  const handleSelect = (role, candidateId, type = "YES") => {
+    setSelections((prev) => ({ ...prev, [role]: { id: candidateId, type } }));
   };
 
   const handleNext = () => {
@@ -130,7 +130,12 @@ const DedicatedVotePage = () => {
         body: JSON.stringify({
           reg_number: auth.reg_number,
           pin: auth.pin,
-          candidate_ids: Object.values(selections),
+          candidate_ids: Object.values(selections)
+            .filter((s) => s && s.type === "YES")
+            .map((s) => s.id),
+          no_vote_candidate_ids: Object.values(selections)
+            .filter((s) => s && s.type === "NO")
+            .map((s) => s.id),
         }),
       });
 
@@ -317,7 +322,9 @@ const DedicatedVotePage = () => {
           <div className="space-y-4 mb-8">
             {roles.map((role) => {
               const searchRole = roles.find((r) => r === role);
-              const candidateId = selections[role];
+              const selection = selections[role];
+              const candidateId = selection?.id;
+              const voteType = selection?.type;
               const candidate = candidates[role]?.find(
                 (c) => c.id === candidateId,
               );
@@ -331,7 +338,9 @@ const DedicatedVotePage = () => {
                   <span
                     className={`font-bold ${candidate ? "text-blue-400" : "text-slate-600 italic"}`}
                   >
-                    {candidate ? candidate.name : "Skipped"}
+                    {candidate
+                      ? `${candidate.name} ${voteType === "NO" ? "(VOTE NO)" : ""}`
+                      : "Skipped"}
                   </span>
                 </div>
               );
@@ -359,7 +368,10 @@ const DedicatedVotePage = () => {
 
   const currentRole = roles[currentStep - 1]; // Step 1 corresponds to index 0
   const roleCandidates = candidates[currentRole] || [];
-  const selectedId = selections[currentRole];
+  const selection = selections[currentRole];
+  const selectedId = selection?.id;
+  const selectedType = selection?.type;
+  const isUnopposed = roleCandidates.length === 1;
 
   return (
     <div className="min-h-screen bg-slate-900 text-white font-sans selection:bg-blue-500 selection:text-white">
@@ -389,12 +401,18 @@ const DedicatedVotePage = () => {
             roleCandidates.map((candidate) => (
               <div
                 key={candidate.id}
-                onClick={() => handleSelect(currentRole, candidate.id)}
+                onClick={() =>
+                  !isUnopposed && handleSelect(currentRole, candidate.id, "YES")
+                }
                 className={`
                             relative p-6 rounded-2xl border transition-all cursor-pointer group
                             ${
                               selectedId === candidate.id
-                                ? "bg-blue-600/10 border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.15)]"
+                                ? isUnopposed
+                                  ? selectedType === "YES"
+                                    ? "bg-green-600/10 border-green-500 shadow-[0_0_30px_rgba(34,197,94,0.15)]"
+                                    : "bg-red-600/10 border-red-500 shadow-[0_0_30px_rgba(239,68,68,0.15)]"
+                                  : "bg-blue-600/10 border-blue-500 shadow-[0_0_30px_rgba(59,130,246,0.15)]"
                                 : "bg-slate-800/50 border-slate-700 hover:border-slate-600 hover:bg-slate-800"
                             }
                         `}
@@ -403,7 +421,15 @@ const DedicatedVotePage = () => {
                   <div
                     className={`
                                 w-16 h-16 rounded-full flex items-center justify-center overflow-hidden border-2
-                                ${selectedId === candidate.id ? "border-blue-500" : "border-slate-600"}
+                                ${
+                                  selectedId === candidate.id
+                                    ? isUnopposed
+                                      ? selectedType === "YES"
+                                        ? "border-green-500"
+                                        : "border-red-500"
+                                      : "border-blue-500"
+                                    : "border-slate-600"
+                                }
                              `}
                   >
                     {candidate.image_url ? (
@@ -426,7 +452,40 @@ const DedicatedVotePage = () => {
                   </div>
                 </div>
 
-                {selectedId === candidate.id && (
+                {/* Unopposed Controls */}
+                {isUnopposed && (
+                  <div className="mt-4 flex gap-3">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelect(currentRole, candidate.id, "YES");
+                      }}
+                      className={`flex-1 py-2 rounded-lg font-bold transition-all ${
+                        selectedId === candidate.id && selectedType === "YES"
+                          ? "bg-green-600 text-white shadow-lg shadow-green-600/20"
+                          : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                      }`}
+                    >
+                      YES
+                    </button>
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleSelect(currentRole, candidate.id, "NO");
+                      }}
+                      className={`flex-1 py-2 rounded-lg font-bold transition-all ${
+                        selectedId === candidate.id && selectedType === "NO"
+                          ? "bg-red-600 text-white shadow-lg shadow-red-600/20"
+                          : "bg-slate-700 text-slate-300 hover:bg-slate-600"
+                      }`}
+                    >
+                      NO
+                    </button>
+                  </div>
+                )}
+
+                {/* Standard Selection Indicator */}
+                {!isUnopposed && selectedId === candidate.id && (
                   <div className="absolute top-4 right-4 bg-blue-500 text-white p-1 rounded-full shadow-lg">
                     <HiCheck size={16} />
                   </div>

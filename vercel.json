@@ -2,7 +2,7 @@
   "rewrites": [
     {
       "source": "/api/(.*)",
-      "destination": "http://localhost:5000/$1"
+      "destination": "http://ec2-13-61-84-116.eu-north-1.compute.amazonaws.com:8000/$1"
     },
     { "source": "/(.*)", "destination": "/index.html" }
   ]

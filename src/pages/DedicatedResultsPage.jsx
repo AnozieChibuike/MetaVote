@@ -15,14 +15,13 @@ const DedicatedResultsPage = () => {
   }, []);
 
   const fetchResults = async () => {
-      const [res, statusRes] = await Promise.all([
-          fetch("/api/candidates"),
+    const [res, statusRes] = await Promise.all([
+      fetch("/api/candidates"),
 
-          fetch("/api/election/status"),
-      ]);
+      fetch("/api/election/status"),
+    ]);
 
-      try {
-
+    try {
       if (res.ok) {
         const data = await res.json();
         setCandidates(data);
@@ -34,10 +33,10 @@ const DedicatedResultsPage = () => {
         });
         setTotalVotes(total);
       }
-      
+
       if (statusRes.ok) {
-          const statusData = await statusRes.json();
-          setElectionStatus(statusData.status);
+        const statusData = await statusRes.json();
+        setElectionStatus(statusData.status);
       }
     } catch (error) {
       console.error("Error fetching results:", error);
@@ -71,15 +70,24 @@ const DedicatedResultsPage = () => {
               <span className="text-2xl font-bold bg-gradient-to-r from-blue-400 to-cyan-400 bg-clip-text text-transparent">
                 MetaVote
               </span>
-              <span className={`text-xs px-2 py-1 rounded-full border ${
-                  electionStatus === 'RUNNING' ? 'bg-green-500/20 text-green-400 border-green-500/50' :
-                  electionStatus === 'PAUSED' ? 'bg-yellow-500/20 text-yellow-400 border-yellow-500/50' :
-                  electionStatus === 'ENDED' ? 'bg-red-500/20 text-red-400 border-red-500/50' :
-                  'bg-slate-700 text-slate-400 border-slate-600'
-              }`}>
-                {electionStatus === 'RUNNING' ? 'Live Results' : 
-                 electionStatus === 'PAUSED' ? 'Election Paused' :
-                 electionStatus === 'ENDED' ? 'Final Results' : 'Not Started'}
+              <span
+                className={`text-xs px-2 py-1 rounded-full border ${
+                  electionStatus === "RUNNING"
+                    ? "bg-green-500/20 text-green-400 border-green-500/50"
+                    : electionStatus === "PAUSED"
+                      ? "bg-yellow-500/20 text-yellow-400 border-yellow-500/50"
+                      : electionStatus === "ENDED"
+                        ? "bg-red-500/20 text-red-400 border-red-500/50"
+                        : "bg-slate-700 text-slate-400 border-slate-600"
+                }`}
+              >
+                {electionStatus === "RUNNING"
+                  ? "Live Results"
+                  : electionStatus === "PAUSED"
+                    ? "Election Paused"
+                    : electionStatus === "ENDED"
+                      ? "Final Results"
+                      : "Not Started"}
               </span>
             </div>
             <div className="flex items-center gap-2 text-slate-400 text-sm">
@@ -88,7 +96,7 @@ const DedicatedResultsPage = () => {
                 <span className="relative inline-flex rounded-full h-3 w-3 bg-green-500"></span>
               </span>
 
-              {electionStatus === 'RUNNING' ? 'Live Updates' : 'Results'}
+              {electionStatus === "RUNNING" ? "Live Updates" : "Results"}
             </div>
           </div>
         </div>
@@ -120,6 +128,8 @@ const DedicatedResultsPage = () => {
               );
               const leader = sortedCandidates[0];
 
+              const isUnopposed = roleCandidates.length === 1;
+
               return (
                 <div
                   key={role}
@@ -136,6 +146,70 @@ const DedicatedResultsPage = () => {
 
                   <div className="p-8 space-y-6">
                     {sortedCandidates.map((candidate, index) => {
+                      if (isUnopposed) {
+                        const yesVotes = candidate.vote_count || 0;
+                        const noVotes = candidate.no_vote_count || 0;
+                        const total = yesVotes + noVotes;
+                        const yesPercent =
+                          total === 0
+                            ? 0
+                            : ((yesVotes / total) * 100).toFixed(1);
+                        const noPercent =
+                          total === 0
+                            ? 0
+                            : ((noVotes / total) * 100).toFixed(1);
+
+                        return (
+                          <div key={candidate.id} className="relative">
+                            <div className="flex items-center gap-4 mb-4">
+                              <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-600">
+                                {candidate.image_url ? (
+                                  <img
+                                    src={candidate.image_url}
+                                    alt={candidate.name}
+                                    className="w-full h-full object-cover"
+                                  />
+                                ) : (
+                                  <div className="w-full h-full bg-slate-700 flex items-center justify-center">
+                                    <FaUserTie className="text-slate-400 text-xl" />
+                                  </div>
+                                )}
+                              </div>
+                              <div>
+                                <h3 className="font-bold text-xl text-slate-200">
+                                  {candidate.name} (Unopposed)
+                                </h3>
+                              </div>
+                            </div>
+
+                            {/* Split Bar */}
+                            <div className="w-full bg-slate-700/50 rounded-full h-6 overflow-hidden flex">
+                              <div
+                                className="bg-green-500 h-full flex items-center justify-center text-xs font-bold text-black transition-all duration-1000"
+                                style={{ width: `${yesPercent}%` }}
+                              >
+                                {yesPercent > 5 && `${yesPercent}%`}
+                              </div>
+                              <div
+                                className="bg-red-500 h-full flex items-center justify-center text-xs font-bold text-white transition-all duration-1000"
+                                style={{ width: `${noPercent}%` }}
+                              >
+                                {noPercent > 5 && `${noPercent}%`}
+                              </div>
+                            </div>
+                            <div className="flex justify-between mt-2 text-sm">
+                              <span className="text-green-400 font-bold">
+                                {yesVotes} YES
+                              </span>
+                              <span className="text-red-400 font-bold">
+                                {noVotes} NO
+                              </span>
+                            </div>
+                          </div>
+                        );
+                      }
+
+                      // Standard Opposed UI
                       const percentage =
                         totalRoleVotes === 0
                           ? 0

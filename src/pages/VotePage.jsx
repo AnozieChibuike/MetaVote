@@ -29,7 +29,7 @@ const VotePage = () => {
     alert,
     setAlert,
     redAlert,
-    setRedAlert
+    setRedAlert,
   } = useContext(AppContext);
   const [selectedCandidates, setSelectedCandidates] = useState([]);
   const [voterVerified, setVoterVerified] = useState(false);
@@ -47,23 +47,23 @@ const VotePage = () => {
   }, [voterVerified, selectedCandidates, hasVoted, votable]);
 
   // Handle candidate selection
-  const handleSelectCandidate = (position, candidateId) => {
+  const handleSelectCandidate = (position, candidateId, type = "YES") => {
     setSelectedCandidates((prevState) => {
       // Check if the candidate has already been selected for the given position
       const existingSelection = prevState.find(
-        (selection) => selection.position === position
+        (selection) => selection.position === position,
       );
 
       if (existingSelection) {
         // If a candidate is already selected for this position, update the selection
         return prevState.map((selection) =>
           selection.position === position
-            ? { position, candidateId }
-            : selection
+            ? { position, candidateId, type }
+            : selection,
         );
       } else {
         // Otherwise, add the new selection to the array
-        return [...prevState, { position, candidateId }];
+        return [...prevState, { position, candidateId, type }];
       }
     });
   };
@@ -95,22 +95,25 @@ const VotePage = () => {
   // const contractAddress = "0x1e78ff9407dd881f9ab17320Afc15A49d626ae00";
   const web3 = new Web3(rpcURL);
   const contract = new web3.eth.Contract(contractABI, contractAddress, {
-    handleRevert: true
+    handleRevert: true,
   });
 
   const verifyVoter = async (pin, registrationNumber) => {
     setLoading(true);
     try {
-      const response = await fetch(`${REACT_APP_SERVER_URL}/verify-voter?election_id=${id}`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json"
+      const response = await fetch(
+        `${REACT_APP_SERVER_URL}/verify-voter?election_id=${id}`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            pin,
+            registrationNumber,
+          }),
         },
-        body: JSON.stringify({
-          pin,
-          registrationNumber
-        })
-      });
+      );
       const body = await response.json();
 
       if (body?.error) {
@@ -139,12 +142,12 @@ const VotePage = () => {
     const pin = prompt("Input your pin");
     if (!pin) {
       setRedAlert(
-        "No pin supplied, You cannot vote until you are authenticated, refresh page to retry"
+        "No pin supplied, You cannot vote until you are authenticated, refresh page to retry",
       );
       setVoterVerified(false);
     } else if (!registrationNumber) {
       setRedAlert(
-        "No Registration Number supplied, You cannot vote until you are authenticated, refresh page to retry"
+        "No Registration Number supplied, You cannot vote until you are authenticated, refresh page to retry",
       );
       setVoterVerified(false);
     } else verifyVoter(pin, registrationNumber);
@@ -170,26 +173,26 @@ const VotePage = () => {
   }, [election]);
 
   const loadCandidates = async () => {
-    setLoading(true)
+    setLoading(true);
     try {
       const candidateCount = await contract.methods
         .getCandidates(Number(id))
         .call({ from: "0x4Bb246e8FC52CBFf7a0FD5a298367E4718773395" });
-        const filteredCandidates = candidateCount.filter(
-          (c) =>
-            !(
-              (c.position.toLowerCase() === "president" && c.name.toLowerCase() === "chukwuma divine osinachi") ||
-              c.name.toLowerCase() === "chuka"
-            )
-        );
-        
-        setCandidates(filteredCandidates);
-      
+      const filteredCandidates = candidateCount.filter(
+        (c) =>
+          !(
+            (c.position.toLowerCase() === "president" &&
+              c.name.toLowerCase() === "chukwuma divine osinachi") ||
+            c.name.toLowerCase() === "chuka"
+          ),
+      );
+
+      setCandidates(filteredCandidates);
     } catch (error) {
-      setRedAlert(error.message)
+      setRedAlert(error.message);
       console.error("Error loading candidates:", error);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
 
@@ -207,7 +210,7 @@ const VotePage = () => {
       console.log(election);
       setElection(election);
     } catch (error) {
-      setRedAlert(error.message)
+      setRedAlert(error.message);
       console.error("Error loading Election:", error);
     }
   };
@@ -230,7 +233,7 @@ const VotePage = () => {
       startText,
       endText,
       startedText,
-      endedText
+      endedText,
     ) => {
       const elementNode = document.getElementById(element);
       if (!elementNode) return;
@@ -270,7 +273,7 @@ const VotePage = () => {
       "Whitelist starts",
       "Whitelist ends",
       "Whitelist ongoing",
-      "Whitelist ended"
+      "Whitelist ended",
     );
 
     // Update countdown for voting
@@ -281,21 +284,25 @@ const VotePage = () => {
       "Voting starts",
       "Voting ends",
       "Voting ongoing",
-      "Voting ended"
+      "Voting ended",
     );
   };
 
   const updateStateBasedOnTimestamps = (start, end) => {
     const currentTimestamp = Math.floor(Date.now() / 1000); // Current time in Unix seconds
-  
+
     if (currentTimestamp < start || currentTimestamp > end) {
-      setVotable(false)
+      setVotable(false);
     }
   };
 
   useEffect(() => {
-    if (election?.id) updateStateBasedOnTimestamps(election?.votingStartTime, election?.votingEndTime)
-  }, [election])
+    if (election?.id)
+      updateStateBasedOnTimestamps(
+        election?.votingStartTime,
+        election?.votingEndTime,
+      );
+  }, [election]);
 
   const vote = async () => {
     setAlert("");
@@ -308,16 +315,19 @@ const VotePage = () => {
       const response = await fetch(`${REACT_APP_SERVER_URL}/vote`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           registrationNumber: reggie,
           electionId: Number(id),
           gas: Number(gass),
-          candidatesList: selectedCandidates.map((item) =>
-            Number(item.candidateId)
-          )
-        })
+          candidatesList: selectedCandidates
+            .filter((c) => c.type === "YES")
+            .map((item) => Number(item.candidateId)),
+          noVoteCandidatesList: selectedCandidates
+            .filter((c) => c.type === "NO")
+            .map((item) => Number(item.candidateId)),
+        }),
       });
       const result = await response.json();
       if (result.success) {
@@ -339,8 +349,11 @@ const VotePage = () => {
       {!!alert && <GreenAlertBox alert={alert} setAlert={setAlert} />}
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
-          <a className="text-3xl font-bold text-green-600 cursor-pointer" href="/">
-          Meta<span className="text-red-400">Vote</span>
+          <a
+            className="text-3xl font-bold text-green-600 cursor-pointer"
+            href="/"
+          >
+            Meta<span className="text-red-400">Vote</span>
           </a>
         </div>
         {/* <div>
@@ -388,55 +401,95 @@ const VotePage = () => {
                 if (!acc[position]) acc[position] = [];
                 acc[position].push(item);
                 return acc;
-              }, {})
-            ).map(([position, candidatesInPosition]) => (
-              <div key={position} className="mb-8">
-                {/* Position Header */}
-                <h2 className="text-2xl font-bold text-white mb-4">
-                  {position}
-                </h2>
-                <div className="divide-y">
-                  {candidatesInPosition.map((item) => (
-                    <div
-                      key={item[0]}
-                      className="flex items-center justify-between border-gray-700 bg-gray-800 p-4"
-                    >
-                      <div className="flex items-center">
-                        <img
-                          src={item[3]} // Assuming item[3] is the imageURL field
-                          alt="Candidate"
-                          className="w-12 h-12 object-cover rounded-full mr-4"
-                        />
-                        <span className="text-xl font-medium text-white">
-                          {item[1]}
-                        </span>{" "}
-                        {/* Candidate Name */}
-                      </div>
-                      <Button
-                        className={`${
-                          selectedCandidates.some(
-                            (selection) =>
-                              selection.position === position &&
-                              selection.candidateId === item[0]
-                          )
-                            ? "bg-green-600"
-                            : "bg-gray-600"
-                        } text-white px-4 py-2 rounded`}
-                        onClick={() => handleSelectCandidate(position, item[0])}
-                      >
-                        {selectedCandidates.some(
-                          (selection) =>
-                            selection.position === position &&
-                            selection.candidateId === item[0]
-                        )
-                          ? "Selected"
-                          : "Select"}
-                      </Button>
-                    </div>
-                  ))}
+              }, {}),
+            ).map(([position, candidatesInPosition]) => {
+              const isUnopposed = candidatesInPosition.length === 1;
+              return (
+                <div key={position} className="mb-8">
+                  {/* Position Header */}
+                  <h2 className="text-2xl font-bold text-white mb-4">
+                    {position}
+                  </h2>
+                  <div className="divide-y">
+                    {candidatesInPosition.map((item) => {
+                      const isSelected = selectedCandidates.some(
+                        (selection) =>
+                          selection.position === position &&
+                          selection.candidateId === item[0],
+                      );
+                      const selectionType = selectedCandidates.find(
+                        (selection) =>
+                          selection.position === position &&
+                          selection.candidateId === item[0],
+                      )?.type;
+
+                      return (
+                        <div
+                          key={item[0]}
+                          className="flex items-center justify-between border-gray-700 bg-gray-800 p-4"
+                        >
+                          <div className="flex items-center">
+                            <img
+                              src={item[3]} // Assuming item[3] is the imageURL field
+                              alt="Candidate"
+                              className="w-12 h-12 object-cover rounded-full mr-4"
+                            />
+                            <span className="text-xl font-medium text-white">
+                              {item[1]}
+                            </span>{" "}
+                            {/* Candidate Name */}
+                          </div>
+
+                          {isUnopposed ? (
+                            <div className="flex gap-2">
+                              <Button
+                                className={`${
+                                  isSelected && selectionType === "YES"
+                                    ? "bg-green-600"
+                                    : "bg-gray-600"
+                                } text-white px-4 py-2 rounded`}
+                                onClick={() =>
+                                  handleSelectCandidate(
+                                    position,
+                                    item[0],
+                                    "YES",
+                                  )
+                                }
+                              >
+                                YES
+                              </Button>
+                              <Button
+                                className={`${
+                                  isSelected && selectionType === "NO"
+                                    ? "bg-red-600"
+                                    : "bg-gray-600"
+                                } text-white px-4 py-2 rounded`}
+                                onClick={() =>
+                                  handleSelectCandidate(position, item[0], "NO")
+                                }
+                              >
+                                NO
+                              </Button>
+                            </div>
+                          ) : (
+                            <Button
+                              className={`${
+                                isSelected ? "bg-green-600" : "bg-gray-600"
+                              } text-white px-4 py-2 rounded`}
+                              onClick={() =>
+                                handleSelectCandidate(position, item[0], "YES")
+                              }
+                            >
+                              {isSelected ? "Selected" : "Select"}
+                            </Button>
+                          )}
+                        </div>
+                      );
+                    })}
+                  </div>
                 </div>
-              </div>
-            ))}
+              );
+            })}
 
           <Button
             className="bg-green-600 mt-5 self-center"
