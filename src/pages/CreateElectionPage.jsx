@@ -10,12 +10,13 @@ import Loader from "../components/loader.jsx";
 import { useNavigate } from "react-router-dom";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
-import REACT_APP_SERVER_URL,{ explorerURL, rpcURL } from "../constant.js";
-import checkSession from "../helper/session.js";
+import REACT_APP_SERVER_URL, { explorerURL, rpcURL } from "../constant.js";
+import useAdminAuth from "../helper/session.js";
 
 const CreateElectionPage = () => {
-  checkSession()
+  const { loading: authLoading, authenticated } = useAdminAuth();
   const navigate = useNavigate();
+
   const [elect, setElect] = useState({});
   const [depElections, setDepElections] = useState([]);
   const [electionName, setElectionName] = useState("");
@@ -35,7 +36,7 @@ const CreateElectionPage = () => {
     alert,
     setAlert,
     redAlert,
-    setRedAlert
+    setRedAlert,
   } = useContext(AppContext);
 
   function logErrorDetails(error) {
@@ -52,7 +53,9 @@ const CreateElectionPage = () => {
       const elections = await contract.methods
         .getElectionsByCreator(account)
         .call({ from: account });
-        const filteredElections = elections.filter(election => election.id > 15);
+      const filteredElections = elections.filter(
+        (election) => election.id > 15,
+      );
       setDepElections(filteredElections);
       console.log(elections);
     } catch (error) {
@@ -61,7 +64,7 @@ const CreateElectionPage = () => {
       setRedAlert(
         "Error: " +
           error.message +
-          " Deployed Elections check your internet connection"
+          " Deployed Elections check your internet connection",
       );
     } finally {
       setElectionLoading(false);
@@ -93,14 +96,14 @@ const CreateElectionPage = () => {
       const response = await fetch(`${REACT_APP_SERVER_URL}/create-election`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           electionName,
           electionLogoUrl,
           start: dateToTimestamp(votingStart),
-          end: dateToTimestamp(votingEnd)
-        })
+          end: dateToTimestamp(votingEnd),
+        }),
       });
       const body = await response.json();
       if (body.success) {
@@ -115,7 +118,7 @@ const CreateElectionPage = () => {
               link
             </a>{" "}
             to view the transaction on the blockchain explorer
-          </span>
+          </span>,
         );
         populateElections();
       } else setRedAlert(body.error);
@@ -128,17 +131,32 @@ const CreateElectionPage = () => {
     }
   };
   // TODO: Implement a function to check elections from backend, compare to blockchain data and use that data to show admins
+
+  if (authLoading) return <Loader />;
+  if (!authenticated) return null;
+
   return (
     <>
-    
       {loading && <Loader />}
       {!!alert && <GreenAlertBox alert={alert} setAlert={setAlert} />}
       {!!redAlert && <RedAlertBox alert={redAlert} setAlert={setRedAlert} />}
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
-          <a className="text-3xl font-bold text-green-600 cursor-pointer" href="/">
-          Meta<span className="text-red-400">Vote</span>
+          <a
+            className="text-3xl font-bold text-green-600 cursor-pointer"
+            href="/"
+          >
+            Meta<span className="text-red-400">Vote</span>
           </a>
+          <button
+            onClick={async () => {
+              await fetch("/api/admin/logout", { method: "POST" });
+              navigate("/signin");
+            }}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Logout
+          </button>
         </div>
         <h2 className="text-2xl text-center my-3 font-semibold">
           Create Election

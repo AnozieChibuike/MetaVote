@@ -7,6 +7,13 @@ const Dotenv = require('dotenv-webpack');
 
 module.exports = {
   entry: "./src/main.jsx", // Your app entry point
+  // historyApiFallback: {
+  //   // This tells Webpack: "If the URL starts with /api, do NOT send index.html"
+  //   // This allows the Proxy to handle it instead.
+  //   rewrites: [
+  //     { from: /^\/api/, to: (context) => context.parsedUrl.pathname }
+  //   ],
+  // },
   output: {
     filename: "bundle.js",
     path: path.resolve(__dirname, "dist"),
@@ -14,11 +21,24 @@ module.exports = {
   },
   mode: "development", // Use 'production' for production builds
   devServer: {
-    static: "./dist",
+    static: {
+      directory: path.join(__dirname, 'public'),
+    },
+    historyApiFallback: true,
     hot: true,
-    liveReload: false,
-    open: true,
-    port: 3000, // Port for your development server
+    port: 3000,
+    proxy: [
+      {
+        context: ['/api'],
+        target: 'http://localhost:5000',
+        changeOrigin: true,
+        secure: false,
+        pathRewrite: { '^/api': '' },
+        onProxyReq: (proxyReq, req, res) => {
+           // console.log(`[Proxying] ${req.method} ${req.url} -> ${proxyReq.host}${proxyReq.path}`);
+        }
+      },
+    ],
   },
   module: {
     rules: [
@@ -71,10 +91,10 @@ module.exports = {
       safe: true,     // Optionally checks .env.example for required variables
     }),
   ],
-  devServer: {
-    static: "./public",
-    historyApiFallback: true, // This enables reloading for routes
-    port: 3000,
-    hot: true,
-  },
+  // devServer: {
+  //   static: "./public",
+  //   historyApiFallback: true, // This enables reloading for routes
+  //   port: 3000,
+  //   hot: true,
+  // },
 };

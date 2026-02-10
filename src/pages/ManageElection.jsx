@@ -10,13 +10,14 @@ import { Button, Label, Modal, Table, TextInput } from "flowbite-react";
 import GreenAlertBox from "../components/GreenAlertBox.jsx";
 import RedAlertBox from "../components/RedAlertBox.jsx";
 import REACT_APP_SERVER_URL, { explorerURL, rpcURL } from "../constant.js";
-import checkSession from "../helper/session.js";
+import useAdminAuth from "../helper/session.js";
 
 const web3 = new Web3(rpcURL);
 const contract = new web3.eth.Contract(contractABI, contractAddress);
 
 function ManageElection() {
-  checkSession()
+  const { loading: authLoading, authenticated } = useAdminAuth();
+
   const [openModal, setOpenModal] = React.useState(false);
   // const [openDepositModal, setOpenDepositModal] = React.useState(false);
   const navigate = useNavigate();
@@ -30,7 +31,7 @@ function ManageElection() {
     alert,
     setAlert,
     redAlert,
-    setRedAlert
+    setRedAlert,
   } = useContext(AppContext);
   const urlParams = new URLSearchParams(window.location.search);
   // const [price, setPrice] = useState(null);
@@ -48,7 +49,7 @@ function ManageElection() {
   const fetchFileStatus = async () => {
     try {
       const response = await fetch(
-        `${REACT_APP_SERVER_URL}/voters-file-status?election_id=${id}`
+        `${REACT_APP_SERVER_URL}/voters-file-status?election_id=${id}`,
       );
       const data = await response.json();
       setFileStatus(data?.isEmpty);
@@ -81,7 +82,7 @@ function ManageElection() {
         return;
       }
       setItems(election);
-      console.log(election)
+      console.log(election);
     } catch (error) {
       setRedAlert(error.message);
       console.error("Error loading election:", error);
@@ -108,7 +109,7 @@ function ManageElection() {
       startText,
       endText,
       startedText,
-      endedText
+      endedText,
     ) => {
       const elementNode = document.getElementById(element);
       if (!elementNode) return;
@@ -148,7 +149,7 @@ function ManageElection() {
       "Whitelist starts",
       "Whitelist ends",
       "Whitelist ongoing",
-      "Whitelist ended"
+      "Whitelist ended",
     );
 
     // Update countdown for voting
@@ -159,24 +160,24 @@ function ManageElection() {
       "Voting starts",
       "Voting ends",
       "Voting ongoing",
-      "Voting ended"
+      "Voting ended",
     );
   };
 
   const fetchCandidates = async () => {
     const candidateCount = await contract.methods
-        .getCandidates(Number(id))
-        .call({ from: "0x4Bb246e8FC52CBFf7a0FD5a298367E4718773395" });
-        const filteredCandidates = candidateCount.filter(
-          (c) =>
-            !(
-              (c.position.toLowerCase() === "president" && c.name.toLowerCase() === "chukwuma divine osinachi") ||
-              c.name.toLowerCase() === "chuka"
-            )
-        );
-        
-        setCandidates(filteredCandidates);
-      
+      .getCandidates(Number(id))
+      .call({ from: "0x4Bb246e8FC52CBFf7a0FD5a298367E4718773395" });
+    const filteredCandidates = candidateCount.filter(
+      (c) =>
+        !(
+          (c.position.toLowerCase() === "president" &&
+            c.name.toLowerCase() === "chukwuma divine osinachi") ||
+          c.name.toLowerCase() === "chuka"
+        ),
+    );
+
+    setCandidates(filteredCandidates);
   };
 
   useEffect(() => {
@@ -197,7 +198,6 @@ function ManageElection() {
     }
   };
 
-
   // Handle delete file
 
   const handleDelete = async () => {
@@ -207,18 +207,18 @@ function ManageElection() {
         {
           method: "DELETE",
           headers: {
-          "Content-Type": "application/json"
-          }
-        }
+            "Content-Type": "application/json",
+          },
+        },
       );
       const data = await response.json();
-      setAlert(data?.message)
-      location.reload()
+      setAlert(data?.message);
+      location.reload();
     } catch (error) {
       console.error("Error fetching file status:", error);
-      setRedAlert(error.message)
+      setRedAlert(error.message);
     }
-  }
+  };
 
   // Handle file upload
   const handleUpload = async () => {
@@ -230,11 +230,11 @@ function ManageElection() {
     const formData = new FormData();
     formData.append("file", file);
     formData.append("election_id", id);
-    setLoading(true)
+    setLoading(true);
     try {
       const response = await fetch(`${REACT_APP_SERVER_URL}/upload`, {
         method: "POST",
-        body: formData
+        body: formData,
       });
 
       if (!response.ok) {
@@ -243,14 +243,17 @@ function ManageElection() {
 
       const data = await response.json();
       setAlert("File uploaded successfully!");
-      fetchFileStatus()
+      fetchFileStatus();
     } catch (error) {
       console.error("Error uploading file:", error);
       setRedAlert(error.message);
     } finally {
-      setLoading(false)
+      setLoading(false);
     }
   };
+
+  if (authLoading) return <Loader />;
+  if (!authenticated) return null;
 
   return (
     <>
@@ -259,15 +262,27 @@ function ManageElection() {
       {!!redAlert && <RedAlertBox setAlert={setRedAlert} alert={redAlert} />}
       <div className="px-3">
         <div className="flex flex-row justify-between items-center p-3">
-          <a className="text-3xl font-bold text-green-600 cursor-pointer" href="/">
+          <a
+            className="text-3xl font-bold text-green-600 cursor-pointer"
+            href="/"
+          >
             Meta<span className="text-red-400">Vote</span>
           </a>
+          <button
+            onClick={async () => {
+              await fetch("/api/admin/logout", { method: "POST" });
+              navigate("/signin");
+            }}
+            className="bg-red-600 text-white px-4 py-2 rounded hover:bg-red-700"
+          >
+            Logout
+          </button>
         </div>
         <a href="/admin" className="text-green-700">
           Back
         </a>
         <div className="flex justify-center items-center">
-          <img src={items?.logoUrl}  className="w-32"/>
+          <img src={items?.logoUrl} className="w-32" />
         </div>
         <h2 className="text-2xl text-center my-3 font-semibold">
           Manage Election
@@ -278,25 +293,27 @@ function ManageElection() {
         <a
           className="italic text-green-600"
           href={`http://${window.location.host}/vote?id=${Number(
-            items ? items.id : 0
+            items ? items.id : 0,
           )}`}
         >
-          http://{window.location.host}/vote?id={Number(items ? items.id : 0)}
+          http://{window.location.host}/vote?id=
+          {Number(items ? items.id : 0)}
         </a>
         <p className="mt-3">Results Link: </p>
         <a
           className="italic text-green-600"
           href={`http://${window.location.host}/results?id=${Number(
-            items ? items.id : 0
+            items ? items.id : 0,
           )}`}
         >
-          http://{window.location.host}/results?id={Number(items ? items.id : 0)}
+          http://{window.location.host}/results?id=
+          {Number(items ? items.id : 0)}
         </a>
         <p className="mt-3">Voter's WhiteList Link: </p>
         <a
           className="italic text-green-600"
           href={`http://${window.location.host}/whitelist?id=${Number(
-            items ? items.id : 0
+            items ? items.id : 0,
           )}`}
         >
           http://{window.location.host}/whitelist?id=
@@ -306,7 +323,7 @@ function ManageElection() {
         <a
           className="italic text-green-600"
           href={`http://${window.location.host}/voters?id=${Number(
-            items ? items.id : 0
+            items ? items.id : 0,
           )}`}
         >
           http://{window.location.host}/voters?id=
@@ -314,8 +331,7 @@ function ManageElection() {
         </a>
         <div className="">
           <p className="italic">Upload a text file of eligible voters</p>
-          {
-            fileStatus ?
+          {fileStatus ? (
             <>
               <p>No Voter's file yet</p>
               <input
@@ -327,29 +343,34 @@ function ManageElection() {
               <Button className="bg-green-600" onClick={handleUpload}>
                 Upload
               </Button>
-            </> : <>
-            <div className="flex gap-3 items-center">
-            <p>Voter's file exist</p>
-            <a className="bg-green-600 p-3" href={`${REACT_APP_SERVER_URL}/static/voters/${id}.json`} target="_blank">
-                View File
-              </a>
-            <Button className="bg-red-600" onClick={handleDelete}>
-                Delete File
-              </Button>
-            </div>
+            </>
+          ) : (
+            <>
+              <div className="flex gap-3 items-center">
+                <p>Voter's file exist</p>
+                <a
+                  className="bg-green-600 p-3"
+                  href={`${REACT_APP_SERVER_URL}/static/voters/${id}.json`}
+                  target="_blank"
+                >
+                  View File
+                </a>
+                <Button className="bg-red-600" onClick={handleDelete}>
+                  Delete File
+                </Button>
+              </div>
               <input
                 className="my-2"
                 type="file"
                 accept=".txt" // Ensures only .txt files are selectable
                 onChange={handleFileChange}
               />
-              
-             
+
               <Button className="bg-green-600" onClick={handleUpload}>
                 Update
               </Button>
             </>
-          }
+          )}
         </div>
         <div>
           {/* <p id="whitelist"></p> */}
@@ -368,7 +389,7 @@ function ManageElection() {
                 if (!acc[position]) acc[position] = [];
                 acc[position].push(item);
                 return acc;
-              }, {})
+              }, {}),
             ).map(([position, candidatesInPosition]) => (
               <div key={position} className="mb-8">
                 {/* Position Header */}
@@ -450,7 +471,7 @@ const CandidateModal = ({
   setOpenModal = () => {},
   setAlert = () => {},
   setLoading = () => {},
-  setCandidates = () => {}
+  setCandidates = () => {},
 }) => {
   const [name, setName] = React.useState("");
   const [image, setImage] = React.useState("");
@@ -473,14 +494,14 @@ const CandidateModal = ({
       const response = await fetch(`${REACT_APP_SERVER_URL}/create-candidate`, {
         method: "POST",
         headers: {
-          "Content-Type": "application/json"
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({
           electionId,
           position: String(position).trim().toUpperCase(),
           name,
-          imageUrl: image
-        })
+          imageUrl: image,
+        }),
       });
       const body = await response.json();
       if (body.success)
@@ -495,7 +516,7 @@ const CandidateModal = ({
               link
             </a>{" "}
             to view the transaction on the blockchain explorer
-          </span>
+          </span>,
         );
       fetchCandidates();
       onCloseModal();
@@ -585,7 +606,7 @@ const DepositModal = ({
   items,
   setOpenModal = () => {},
   setLoading = () => {},
-  loadElection = () => {}
+  loadElection = () => {},
 }) => {
   const [name, setName] = React.useState("");
   function onCloseModal() {
