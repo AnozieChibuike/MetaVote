@@ -391,7 +391,7 @@ const DedicatedAdminDashboard = () => {
                         <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-600">
                           {candidate.image_url ? (
                             <img
-                              src={candidate.image_url}
+                              src={candidate.name === "CHIBUZO EMMANUEL OLUEBUBECHUKWU" ? "https://bafkreihtysunhalraprcoh2jwoelc7qkjtdpf5crkomvde2lcnalekiili.ipfs.w3s.link" : candidate.image_url }
                               alt={candidate.name}
                               className="w-full h-full object-cover"
                             />

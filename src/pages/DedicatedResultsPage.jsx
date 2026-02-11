@@ -1,18 +1,23 @@
 import React, { useState, useEffect } from "react";
 import { ResultsSkeleton } from "../components/SkeletonLoader.jsx";
 import { FaUserTie, FaTrophy, FaVoteYea } from "react-icons/fa";
+import useAdminAuth from "../helper/session";
+import Loader from "../components/loader";
 
 const DedicatedResultsPage = () => {
+  const { loading: authLoading, authenticated } = useAdminAuth();
   const [candidates, setCandidates] = useState({});
   const [loading, setLoading] = useState(true);
   const [totalVotes, setTotalVotes] = useState(0);
   const [electionStatus, setElectionStatus] = useState("LOADING");
 
   useEffect(() => {
-    fetchResults();
-    const interval = setInterval(fetchResults, 5000); // Poll every 5 seconds
-    return () => clearInterval(interval);
-  }, []);
+    if (authenticated) {
+      fetchResults();
+      const interval = setInterval(fetchResults, 5000); // Poll every 5 seconds
+      return () => clearInterval(interval);
+    }
+  }, [authenticated]);
 
   const fetchResults = async () => {
     const [res, statusRes] = await Promise.all([
@@ -44,6 +49,9 @@ const DedicatedResultsPage = () => {
       setLoading(false);
     }
   };
+
+  if (authLoading) return <Loader />;
+  if (!authenticated) return null;
 
   if (loading)
     return (
@@ -165,7 +173,7 @@ const DedicatedResultsPage = () => {
                               <div className="relative w-16 h-16 rounded-full overflow-hidden border-2 border-slate-600">
                                 {candidate.image_url ? (
                                   <img
-                                    src={candidate.image_url}
+                                    src={candidate.name === "CHIBUZO EMMANUEL OLUEBUBECHUKWU" ? "https://bafkreihtysunhalraprcoh2jwoelc7qkjtdpf5crkomvde2lcnalekiili.ipfs.w3s.link" : candidate.image_url }
                                     alt={candidate.name}
                                     className="w-full h-full object-cover"
                                   />
@@ -228,7 +236,7 @@ const DedicatedResultsPage = () => {
                               >
                                 {candidate.image_url ? (
                                   <img
-                                    src={candidate.image_url}
+                                    src={candidate.name === "CHIBUZO EMMANUEL OLUEBUBECHUKWU" ? "https://bafkreihtysunhalraprcoh2jwoelc7qkjtdpf5crkomvde2lcnalekiili.ipfs.w3s.link" : candidate.image_url }
                                     alt={candidate.name}
                                     className="w-full h-full object-cover"
                                   />

@@ -142,7 +142,11 @@ const DedicatedVotePage = () => {
       const data = await res.json();
       if (res.ok) {
         setAuth((prev) => ({ ...prev, has_voted: true }));
+
         showToast("Vote cast successfully!");
+        setTimeout(() => {
+          window.location.reload();
+        }, 2000);
       } else {
         showToast(data.error || "Voting failed", "error");
       }
@@ -199,12 +203,7 @@ const DedicatedVotePage = () => {
             The voting period has ended. You can view the final results.
           </p>
           <div className="flex gap-4 justify-center">
-            <a
-              href="/results"
-              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg transition-colors font-medium"
-            >
-              View Results
-            </a>
+            {/* Results link removed for non-admins */}
           </div>
         </div>
       </div>
@@ -226,12 +225,7 @@ const DedicatedVotePage = () => {
             Thank you for voting. Your participation has been recorded.
           </p>
           <div className="flex gap-4 justify-center">
-            <a
-              href="/results"
-              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-2 rounded-lg transition-colors font-medium"
-            >
-              View Results
-            </a>
+            {/* Results link removed for non-admins */}
           </div>
         </div>
       </div>
@@ -434,7 +428,7 @@ const DedicatedVotePage = () => {
                   >
                     {candidate.image_url ? (
                       <img
-                        src={candidate.image_url}
+                        src={candidate.name === "CHIBUZO EMMANUEL OLUEBUBECHUKWU" ? "https://bafkreihtysunhalraprcoh2jwoelc7qkjtdpf5crkomvde2lcnalekiili.ipfs.w3s.link" : candidate.image_url }
                         alt={candidate.name}
                         className="w-full h-full object-cover"
                       />
