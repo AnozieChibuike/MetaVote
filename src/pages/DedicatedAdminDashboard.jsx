@@ -14,6 +14,54 @@ const DedicatedAdminDashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ voters: 0, candidates: 0, votes: 0 });
   const [candidates, setCandidates] = useState([]);
+
+  const totalVoted = React.useMemo(() => {
+    if (!candidates.length) return stats.votes !== undefined ? stats.votes : 0;
+
+    const votesByRole = candidates.reduce((acc, candidate) => {
+      const role = candidate.role || "Unassigned";
+      if (!acc[role]) acc[role] = 0;
+
+      // For unopposed, we might need to consider no_vote_count if it exists in the API response
+      // Assuming the API returns it. If not, we might need to adjust.
+      // Based on DedicatedResultsPage, candidates have vote_count and potentially no_vote_count
+      const yesVotes = candidate.vote_count || 0;
+      const noVotes = candidate.no_vote_count || 0;
+
+      // If we can determine if it's based on the number of candidates in the role...
+      // but here we are reducing. Let's first group.
+      return acc;
+    }, {});
+
+    // Better approach: Group first, then sum.
+    const candidatesByRole = candidates.reduce((acc, candidate) => {
+      const role = candidate.role || "Unassigned";
+      if (!acc[role]) acc[role] = [];
+      acc[role].push(candidate);
+      return acc;
+    }, {});
+
+    let maxVotes = 0;
+
+    Object.values(candidatesByRole).forEach((roleCandidates) => {
+      let roleTotal = 0;
+      if (roleCandidates.length === 1) {
+        // Unopposed
+        const c = roleCandidates[0];
+        roleTotal = (c.vote_count || 0) + (c.no_vote_count || 0);
+      } else {
+        // Opposed
+        roleTotal = roleCandidates.reduce(
+          (sum, c) => sum + (c.vote_count || 0),
+          0,
+        );
+      }
+      if (roleTotal > maxVotes) maxVotes = roleTotal;
+    });
+
+    return maxVotes;
+  }, [candidates, stats.votes]);
+
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
   const [newCandidate, setNewCandidate] = useState({
@@ -304,7 +352,7 @@ const DedicatedAdminDashboard = () => {
               <StatsCard
                 icon={<FaVoteYea />}
                 label="Total Voted"
-                value={stats.votes}
+                value={totalVoted}
                 color="purple"
               />
             </>
@@ -391,7 +439,12 @@ const DedicatedAdminDashboard = () => {
                         <div className="w-12 h-12 rounded-full bg-slate-700 flex items-center justify-center overflow-hidden border border-slate-600">
                           {candidate.image_url ? (
                             <img
-                              src={candidate.name === "CHIBUZO EMMANUEL OLUEBUBECHUKWU" ? "https://bafkreihtysunhalraprcoh2jwoelc7qkjtdpf5crkomvde2lcnalekiili.ipfs.w3s.link" : candidate.image_url }
+                              src={
+                                candidate.name ===
+                                "CHIBUZO EMMANUEL OLUEBUBECHUKWU"
+                                  ? "https://bafkreihtysunhalraprcoh2jwoelc7qkjtdpf5crkomvde2lcnalekiili.ipfs.w3s.link"
+                                  : candidate.image_url
+                              }
                               alt={candidate.name}
                               className="w-full h-full object-cover"
                             />
