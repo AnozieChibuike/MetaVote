@@ -1,7 +1,7 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import useAdminAuth from "../helper/session.js";
-import { FaUsers, FaUserTie, FaVoteYea } from "react-icons/fa";
+import { FaUsers, FaUserTie, FaVoteYea, FaCircleNotch } from "react-icons/fa";
 import Loader from "../components/loader.jsx";
 import { CardSkeleton, ListSkeleton } from "../components/SkeletonLoader.jsx";
 import { Toast } from "flowbite-react";
@@ -14,56 +14,60 @@ const DedicatedAdminDashboard = () => {
   const navigate = useNavigate();
   const [stats, setStats] = useState({ voters: 0, candidates: 0, votes: 0 });
   const [candidates, setCandidates] = useState([]);
+  const [totalVoted, setTotalVoted] = useState(0)
 
-  const totalVoted = React.useMemo(() => {
-    if (!candidates.length) return stats.votes !== undefined ? stats.votes : 0;
+  // const totalVoted = React.useMemo(() => {
+  //   if (!candidates.length) return stats.votes !== undefined ? stats.votes : 0;
 
-    const votesByRole = candidates.reduce((acc, candidate) => {
-      const role = candidate.role || "Unassigned";
-      if (!acc[role]) acc[role] = 0;
+  //   const votesByRole = candidates.reduce((acc, candidate) => {
+  //     const role = candidate.role || "Unassigned";
+  //     if (!acc[role]) acc[role] = 0;
 
-      // For unopposed, we might need to consider no_vote_count if it exists in the API response
-      // Assuming the API returns it. If not, we might need to adjust.
-      // Based on DedicatedResultsPage, candidates have vote_count and potentially no_vote_count
-      const yesVotes = candidate.vote_count || 0;
-      const noVotes = candidate.no_vote_count || 0;
+  //     // For unopposed, we might need to consider no_vote_count if it exists in the API response
+  //     // Assuming the API returns it. If not, we might need to adjust.
+  //     // Based on DedicatedResultsPage, candidates have vote_count and potentially no_vote_count
+  //     const yesVotes = candidate.vote_count || 0;
+  //     const noVotes = candidate.no_vote_count || 0;
 
-      // If we can determine if it's based on the number of candidates in the role...
-      // but here we are reducing. Let's first group.
-      return acc;
-    }, {});
+  //     // If we can determine if it's based on the number of candidates in the role...
+  //     // but here we are reducing. Let's first group.
+  //     return acc;
+  //   }, {});
 
-    // Better approach: Group first, then sum.
-    const candidatesByRole = candidates.reduce((acc, candidate) => {
-      const role = candidate.role || "Unassigned";
-      if (!acc[role]) acc[role] = [];
-      acc[role].push(candidate);
-      return acc;
-    }, {});
+  //   // Better approach: Group first, then sum.
+  //   const candidatesByRole = candidates.reduce((acc, candidate) => {
+  //     const role = candidate.role || "Unassigned";
+  //     if (!acc[role]) acc[role] = [];
+  //     acc[role].push(candidate);
+  //     return acc;
+  //   }, {});
 
-    let maxVotes = 0;
+  //   let maxVotes = 0;
 
-    Object.values(candidatesByRole).forEach((roleCandidates) => {
-      let roleTotal = 0;
-      if (roleCandidates.length === 1) {
-        // Unopposed
-        const c = roleCandidates[0];
-        roleTotal = (c.vote_count || 0) + (c.no_vote_count || 0);
-      } else {
-        // Opposed
-        roleTotal = roleCandidates.reduce(
-          (sum, c) => sum + (c.vote_count || 0),
-          0,
-        );
-      }
-      if (roleTotal > maxVotes) maxVotes = roleTotal;
-    });
+  //   Object.values(candidatesByRole).forEach((roleCandidates) => {
+  //     let roleTotal = 0;
+  //     if (roleCandidates.length === 1) {
+  //       // Unopposed
+  //       const c = roleCandidates[0];
+  //       roleTotal = (c.vote_count || 0) + (c.no_vote_count || 0);
+  //     } else {
+  //       // Opposed
+  //       roleTotal = roleCandidates.reduce(
+  //         (sum, c) => sum + (c.vote_count || 0),
+  //         0,
+  //       );
+  //     }
+  //     if (roleTotal > maxVotes) maxVotes = roleTotal;
+  //   });
 
-    return maxVotes;
-  }, [candidates, stats.votes]);
+  //   return maxVotes;
+  // }, [candidates, stats.votes]);
 
   const [loading, setLoading] = useState(false);
   const [modalOpen, setModalOpen] = useState(false);
+  const [pinModalOpen, setPinModalOpen] = useState(false);
+  const [pinRegNumber, setPinRegNumber] = useState("");
+  const [generatedPin, setGeneratedPin] = useState(null);
   const [newCandidate, setNewCandidate] = useState({
     name: "",
     role: "",
@@ -197,6 +201,30 @@ const DedicatedAdminDashboard = () => {
     }
   };
 
+  const handleGeneratePin = async () => {
+    if (!pinRegNumber) return;
+    setLoading(true);
+    setGeneratedPin(null);
+    try {
+      const res = await fetch(`${SERVER_URL}/generate-pin`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ reg_number: pinRegNumber }),
+      });
+      const data = await res.json();
+      if (res.ok) {
+        setGeneratedPin(data.pin);
+        showToast("PIN generated successfully");
+      } else {
+        showToast(data.error || "Failed to generate PIN", "error");
+      }
+    } catch (error) {
+      showToast("Error generating PIN", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
   if (authLoading) return <Loader />; // Keep full loader for auth check
   if (!authenticated) return null;
 
@@ -211,7 +239,7 @@ const DedicatedAdminDashboard = () => {
                 MetaVote
               </span>
               <span className="text-xs px-2 py-1 rounded-full bg-blue-900/30 text-blue-400 border border-blue-800">
-                EEE Admin
+                SESET Admin
               </span>
             </div>
             <button
@@ -235,12 +263,24 @@ const DedicatedAdminDashboard = () => {
               Manage candidates and view real-time statistics.
             </p>
           </div>
-          <button
-            onClick={() => setModalOpen(true)}
-            className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl shadow-lg shadow-blue-600/20 transition-all font-medium flex items-center gap-2"
-          >
-            <span>+</span> Add Candidate
-          </button>
+          <div className="flex gap-3">
+            <button
+              onClick={() => {
+                setPinModalOpen(true);
+                setGeneratedPin(null);
+                setPinRegNumber("");
+              }}
+              className="bg-emerald-600 hover:bg-emerald-500 text-white px-6 py-3 rounded-xl shadow-lg shadow-emerald-600/20 transition-all font-medium flex items-center gap-2"
+            >
+              <span>🔑</span> Generate PIN
+            </button>
+            <button
+              onClick={() => setModalOpen(true)}
+              className="bg-blue-600 hover:bg-blue-500 text-white px-6 py-3 rounded-xl shadow-lg shadow-blue-600/20 transition-all font-medium flex items-center gap-2"
+            >
+              <span>+</span> Add Candidate
+            </button>
+          </div>
         </div>
 
         {/* Election Control Panel */}
@@ -277,8 +317,10 @@ const DedicatedAdminDashboard = () => {
                   if (hours)
                     handleElectionAction("start", { duration_hours: hours });
                 }}
-                className="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-medium"
+                disabled={loading}
+                className="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 disabled:opacity-70"
               >
+                {loading ? <FaCircleNotch className="animate-spin" /> : null}
                 Start Election
               </button>
             )}
@@ -287,8 +329,10 @@ const DedicatedAdminDashboard = () => {
               <>
                 <button
                   onClick={() => handleElectionAction("pause")}
-                  className="bg-yellow-600 hover:bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium"
+                  disabled={loading}
+                  className="bg-yellow-600 hover:bg-yellow-500 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 disabled:opacity-70"
                 >
+                  {loading ? <FaCircleNotch className="animate-spin" /> : null}
                   Pause
                 </button>
                 <button
@@ -300,8 +344,10 @@ const DedicatedAdminDashboard = () => {
                     )
                       handleElectionAction("end");
                   }}
-                  className="bg-red-600 hover:bg-red-500 text-white px-6 py-2 rounded-lg font-medium"
+                  disabled={loading}
+                  className="bg-red-600 hover:bg-red-500 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 disabled:opacity-70"
                 >
+                  {loading ? <FaCircleNotch className="animate-spin" /> : null}
                   End Election
                 </button>
               </>
@@ -310,8 +356,10 @@ const DedicatedAdminDashboard = () => {
             {election.status === "PAUSED" && (
               <button
                 onClick={() => handleElectionAction("resume")}
-                className="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-medium"
+                disabled={loading}
+                className="bg-green-600 hover:bg-green-500 text-white px-6 py-2 rounded-lg font-medium flex items-center gap-2 disabled:opacity-70"
               >
+                {loading ? <FaCircleNotch className="animate-spin" /> : null}
                 Resume
               </button>
             )}
@@ -352,7 +400,7 @@ const DedicatedAdminDashboard = () => {
               <StatsCard
                 icon={<FaVoteYea />}
                 label="Total Voted"
-                value={totalVoted}
+                value={stats.votes}
                 color="purple"
               />
             </>
@@ -469,7 +517,8 @@ const DedicatedAdminDashboard = () => {
                         </div>
                         <button
                           onClick={() => handleDeleteCandidate(candidate.id)}
-                          className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-400 transition-all"
+                          disabled={loading}
+                          className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
                           title="Delete Candidate"
                         >
                           <HiX size={20} />
@@ -548,10 +597,72 @@ const DedicatedAdminDashboard = () => {
               <button
                 onClick={handleAddCandidate}
                 disabled={loading || !newCandidate.name || !newCandidate.role}
-                className="flex-1 px-4 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+                className="flex-1 px-4 py-2.5 rounded-lg bg-blue-600 text-white hover:bg-blue-500 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
               >
-                {loading ? "Adding..." : "Add Candidate"}
+                {loading ? (
+                  <>
+                    <FaCircleNotch className="animate-spin" /> Adding...
+                  </>
+                ) : (
+                  "Add Candidate"
+                )}
               </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Generate PIN Modal */}
+      {pinModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/60 backdrop-blur-sm animate-fade-in">
+          <div className="bg-slate-900 border border-slate-700 rounded-2xl w-full max-w-md p-6 shadow-2xl relative">
+            <h2 className="text-xl font-bold mb-6 text-slate-100">
+              Generate Voter PIN
+            </h2>
+            <div className="space-y-4">
+              <div>
+                <label className="block text-sm font-medium text-slate-400 mb-1">
+                  Registration Number
+                </label>
+                <input
+                  type="text"
+                  className="w-full bg-slate-950 border border-slate-800 rounded-lg px-4 py-2.5 text-white focus:ring-2 focus:ring-emerald-500/50 focus:border-emerald-500 outline-none transition-all"
+                  placeholder="e.g. 202312345"
+                  value={pinRegNumber}
+                  onChange={(e) => setPinRegNumber(e.target.value)}
+                  disabled={generatedPin !== null}
+                />
+              </div>
+              
+              {generatedPin && (
+                <div className="mt-4 p-4 bg-emerald-500/10 border border-emerald-500/30 rounded-xl text-center">
+                  <p className="text-sm text-emerald-400 mb-1">Generated PIN</p>
+                  <p className="text-3xl font-mono font-bold text-emerald-300 tracking-widest">{generatedPin}</p>
+                </div>
+              )}
+            </div>
+            <div className="mt-8 flex gap-3">
+              <button
+                onClick={() => setPinModalOpen(false)}
+                className="flex-1 px-4 py-2.5 rounded-lg bg-slate-800 text-slate-300 hover:bg-slate-700 font-medium transition-colors"
+              >
+                Close
+              </button>
+              {!generatedPin && (
+                <button
+                  onClick={handleGeneratePin}
+                  disabled={loading || !pinRegNumber}
+                  className="flex-1 px-4 py-2.5 rounded-lg bg-emerald-600 text-white hover:bg-emerald-500 font-medium transition-colors disabled:opacity-50 disabled:cursor-not-allowed flex items-center justify-center gap-2"
+                >
+                  {loading ? (
+                    <>
+                      <FaCircleNotch className="animate-spin" /> Generating...
+                    </>
+                  ) : (
+                    "Generate"
+                  )}
+                </button>
+              )}
             </div>
           </div>
         </div>

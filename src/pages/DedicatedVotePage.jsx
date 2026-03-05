@@ -4,7 +4,7 @@ import Loader from "../components/loader.jsx";
 import { CandidateGridSkeleton } from "../components/SkeletonLoader.jsx";
 import { Toast } from "flowbite-react";
 import { HiCheck, HiX, HiArrowRight, HiArrowLeft } from "react-icons/hi";
-import { FaUserTie, FaCheckCircle } from "react-icons/fa";
+import { FaUserTie, FaCheckCircle, FaCircleNotch } from "react-icons/fa";
 
 const DedicatedVotePage = () => {
   const navigate = useNavigate();
@@ -12,7 +12,7 @@ const DedicatedVotePage = () => {
   const [auth, setAuth] = useState({
     verified: false,
     reg_number: "",
-    pin: "",
+    token: "",
     has_voted: false,
   });
   const [candidates, setCandidates] = useState({}); // { Role: [Candidate, ...] }
@@ -84,7 +84,7 @@ const DedicatedVotePage = () => {
         setAuth({
           verified: true,
           reg_number: data.reg_number,
-          pin: pinInput, // Keep pin for submission
+          token: data.token,
           has_voted: data.has_voted,
         });
 
@@ -126,10 +126,11 @@ const DedicatedVotePage = () => {
     try {
       const res = await fetch("/api/vote", {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${auth.token}`,
+        },
         body: JSON.stringify({
-          reg_number: auth.reg_number,
-          pin: auth.pin,
           candidate_ids: Object.values(selections)
             .filter((s) => s && s.type === "YES")
             .map((s) => s.id),
@@ -271,9 +272,16 @@ const DedicatedVotePage = () => {
             </div>
             <button
               onClick={handleVerify}
-              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-lg shadow-lg shadow-blue-600/20 transition-all mt-4"
+              disabled={loading}
+              className="w-full bg-blue-600 hover:bg-blue-500 text-white py-3 rounded-xl font-bold text-lg shadow-lg shadow-blue-600/20 transition-all mt-4 flex items-center justify-center gap-2"
             >
-              Start Voting
+              {loading ? (
+                <>
+                  <FaCircleNotch className="animate-spin" /> Verifying...
+                </>
+              ) : (
+                "Start Voting"
+              )}
             </button>
           </div>
         </div>
@@ -350,9 +358,16 @@ const DedicatedVotePage = () => {
             </button>
             <button
               onClick={handleSubmitVote}
-              className="flex-1 px-6 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold shadow-lg shadow-green-600/20 transition-all"
+              disabled={loading}
+              className="flex-1 px-6 py-3 rounded-xl bg-green-600 hover:bg-green-500 text-white font-bold shadow-lg shadow-green-600/20 transition-all flex items-center justify-center gap-2 disabled:opacity-70 disabled:cursor-not-allowed"
             >
-              Submit Vote
+              {loading ? (
+                <>
+                  <FaCircleNotch className="animate-spin" /> Casting Vote...
+                </>
+              ) : (
+                "Submit Vote"
+              )}
             </button>
           </div>
         </div>
@@ -428,7 +443,11 @@ const DedicatedVotePage = () => {
                   >
                     {candidate.image_url ? (
                       <img
-                        src={candidate.name === "CHIBUZO EMMANUEL OLUEBUBECHUKWU" ? "https://bafkreihtysunhalraprcoh2jwoelc7qkjtdpf5crkomvde2lcnalekiili.ipfs.w3s.link" : candidate.image_url }
+                        src={
+                          candidate.name === "CHIBUZO EMMANUEL OLUEBUBECHUKWU"
+                            ? "https://bafkreihtysunhalraprcoh2jwoelc7qkjtdpf5crkomvde2lcnalekiili.ipfs.w3s.link"
+                            : candidate.image_url
+                        }
                         alt={candidate.name}
                         className="w-full h-full object-cover"
                       />
@@ -504,7 +523,7 @@ const DedicatedVotePage = () => {
           <div className="flex gap-3">
             <button
               onClick={() => {
-                handleSelect(currentRole, null); // Clear selection
+                // handleSelect(currentRole, ""); // Clear selection
                 handleNext();
               }}
               className="px-6 py-3 rounded-xl text-slate-400 hover:text-white hover:bg-slate-800 transition-colors font-medium"
