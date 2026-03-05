@@ -515,14 +515,7 @@ const DedicatedAdminDashboard = () => {
                             Votes
                           </span>
                         </div>
-                        <button
-                          onClick={() => handleDeleteCandidate(candidate.id)}
-                          disabled={loading}
-                          className="opacity-0 group-hover:opacity-100 p-2 text-slate-400 hover:text-red-400 transition-all disabled:opacity-30 disabled:cursor-not-allowed"
-                          title="Delete Candidate"
-                        >
-                          <HiX size={20} />
-                        </button>
+          
                       </div>
                     </div>
                   ))}
